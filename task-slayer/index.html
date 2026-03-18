@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Task Slayer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Rajdhani:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./css/style.css">
+</head>
+<body>
+  <div class="page-shell">
+    <header class="top-bar panel">
+      <div>
+        <p class="eyebrow">Dungeon Task Board</p>
+        <h1>Task Slayer</h1>
+      </div>
+
+      <div class="level-box">
+        <span class="level-label">Player Level</span>
+        <span class="level-value" id="player-level">7</span>
+      </div>
+
+      <div class="xp-wrapper">
+        <div class="xp-copy">
+          <span>XP Progress</span>
+          <span id="xp-text">180 / 300 XP</span>
+        </div>
+        <div class="xp-bar">
+          <div class="xp-fill" id="xp-fill"></div>
+        </div>
+      </div>
+    </header>
+
+    <main class="scene-stack">
+      <section class="scene scene-active" id="info-scene" aria-label="Info scene">
+        <div class="scene-banner panel">
+          <div>
+            <p class="eyebrow">Quest Hall</p>
+            <h2>Preparation Chamber</h2>
+          </div>
+          <div class="scene-banner-actions">
+            <span class="scene-chip">Quest Management</span>
+            <button class="action-button start-battle-button" id="start-battle-btn" type="button">
+              Start Battle
+            </button>
+          </div>
+        </div>
+
+        <div class="info-overview-grid">
+          <aside class="panel hero-panel compact-panel">
+            <div class="panel-title-row">
+              <h2>Hero</h2>
+              <span class="scene-chip">Idle Loop</span>
+            </div>
+
+            <div class="asset-frame idle-frame compact-portrait" data-asset-key="heroIdle" data-placeholder-label="HERO IDLE" data-fallback-class="hero-idle-art" aria-label="Hero idle render area">
+              <img class="asset-media" alt="Hero idle animation">
+              <div class="asset-placeholder">
+                <span class="asset-label">HERO IDLE</span>
+              </div>
+            </div>
+
+            <div class="stats-list compact-stats">
+              <div class="stat-row">
+                <span>Class</span>
+                <strong>Task Knight</strong>
+              </div>
+              <div class="stat-row">
+                <span>Focus</span>
+                <strong>18</strong>
+              </div>
+              <div class="stat-row">
+                <span>Discipline</span>
+                <strong>24</strong>
+              </div>
+            </div>
+          </aside>
+
+          <section class="panel current-quest-panel">
+            <div class="battle-heading">
+              <div>
+                <p class="eyebrow">Selected Quest</p>
+                <h2 id="task-title">Refactor the Dashboard Header</h2>
+              </div>
+              <span class="difficulty-tag" id="selected-difficulty-tag">Elite Task</span>
+            </div>
+
+            <p class="task-description" id="task-description">
+              Clean up the layout, improve spacing, and make the header responsive for tablet and desktop breakpoints.
+            </p>
+
+            <div class="info-cards">
+              <div class="detail-card deadline-card">
+                <span class="intent-label">Quest Deadline</span>
+                <p id="selected-deadline">March 24, 2026</p>
+              </div>
+              <div class="detail-card">
+                <span class="intent-label">Latest Progress</span>
+                <p id="progress-text">You have mapped the issue and identified the next strike point.</p>
+              </div>
+              <div class="detail-card progress-card wide-card">
+                <div class="progress-card-header">
+                  <span class="intent-label">Quest Completion</span>
+                  <strong id="selected-progress-percent">45%</strong>
+                </div>
+                <div class="quest-progress-bar">
+                  <div class="quest-progress-fill" id="selected-progress-fill"></div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <aside class="panel monster-panel compact-panel">
+            <div class="panel-title-row">
+              <h2>Monster</h2>
+              <span class="scene-chip danger-chip">Idle Loop</span>
+            </div>
+
+            <div class="asset-frame idle-frame compact-portrait" data-asset-key="monsterIdle" data-placeholder-label="MONSTER IDLE" data-fallback-class="monster-idle-art" aria-label="Monster idle render area">
+              <img class="asset-media" alt="Monster idle animation">
+              <div class="asset-placeholder">
+                <span class="asset-label">MONSTER IDLE</span>
+              </div>
+            </div>
+
+            <div class="hp-block compact-hp-block">
+              <div class="hp-copy">
+                <span>Monster HP</span>
+                <span id="hp-text">120 / 120</span>
+              </div>
+              <div class="hp-bar">
+                <div class="hp-fill" id="hp-fill"></div>
+              </div>
+            </div>
+
+            <div class="intent-box">
+              <span class="intent-label">Intent</span>
+              <p id="monster-intent">Preparing a distraction attack.</p>
+            </div>
+          </aside>
+        </div>
+
+        <div class="quest-dashboard-grid">
+          <section class="panel create-quest-panel">
+            <div class="section-head">
+              <div>
+                <p class="eyebrow">Create New Task</p>
+                <h3>Create New Quest</h3>
+              </div>
+              <span class="scene-chip">Required Fields</span>
+            </div>
+
+            <form id="create-task-form" class="quest-form">
+              <label class="form-field">
+                <span class="field-label">Task Name <em>*</em></span>
+                <input id="task-name-input" name="taskName" type="text" placeholder="Enter a quest title" required>
+              </label>
+
+              <label class="form-field">
+                <span class="field-label">Task Description <em>*</em></span>
+                <textarea id="task-description-input" name="taskDescription" rows="5" placeholder="Describe the objective, scope, and expected result." required></textarea>
+              </label>
+
+              <div class="form-row two-column-row">
+                <fieldset class="form-field difficulty-fieldset">
+                  <legend class="field-label">Difficulty <em>*</em></legend>
+                  <div class="difficulty-toggle" id="difficulty-toggle">
+                    <button class="difficulty-option is-active easy-option" type="button" data-difficulty="Easy">Easy</button>
+                    <button class="difficulty-option medium-option" type="button" data-difficulty="Medium">Medium</button>
+                    <button class="difficulty-option hard-option" type="button" data-difficulty="Hard">Hard</button>
+                  </div>
+                  <input id="task-difficulty-input" name="taskDifficulty" type="hidden" value="Easy">
+                </fieldset>
+
+                <label class="form-field deadline-field featured-field">
+                  <span class="field-label">Deadline <em>*</em></span>
+                  <input id="task-deadline-input" name="taskDeadline" type="date" required>
+                  <small class="field-hint">Critical quest timer. Make this count.</small>
+                </label>
+              </div>
+
+              <div class="form-footer">
+                <p class="form-hint">New quests appear in the active list immediately after creation.</p>
+                <button class="action-button create-quest-button" type="submit">Create Quest</button>
+              </div>
+            </form>
+          </section>
+
+          <section class="panel active-quests-panel">
+            <div class="section-head">
+              <div>
+                <p class="eyebrow">Quest Board</p>
+                <h3>Active Quests</h3>
+              </div>
+              <span class="scene-chip" id="quest-count-chip">3 Active</span>
+            </div>
+
+            <div class="active-quest-list" id="active-task-list" aria-live="polite"></div>
+          </section>
+
+          <section class="panel quest-detail-panel">
+            <div class="section-head">
+              <div>
+                <p class="eyebrow">Daily Progress Update</p>
+                <h3>Quest Progress Update</h3>
+              </div>
+              <span class="scene-chip" id="selected-task-chip">Selected Quest</span>
+            </div>
+
+            <div class="selected-task-summary" id="selected-task-summary">
+              <div class="summary-header-row">
+                <div>
+                  <span class="intent-label">Active Quest</span>
+                  <h4 id="detail-task-name">Refactor the Dashboard Header</h4>
+                </div>
+                <span class="difficulty-tag detail-difficulty-tag" id="detail-difficulty-tag">Elite Task</span>
+              </div>
+              <p id="detail-task-description">Clean up the layout, improve spacing, and make the header responsive for tablet and desktop breakpoints.</p>
+              <div class="summary-meta-row">
+                <div class="summary-meta-card featured-field small-featured-field">
+                  <span class="intent-label">Deadline</span>
+                  <strong id="detail-deadline">March 24, 2026</strong>
+                </div>
+                <div class="summary-meta-card">
+                  <span class="intent-label">Current Completion</span>
+                  <strong id="detail-current-progress">45%</strong>
+                </div>
+              </div>
+            </div>
+
+            <form id="progress-update-form" class="progress-form">
+              <label class="form-field">
+                <span class="field-label">Today's Completion Percentage</span>
+                <div class="slider-wrap">
+                  <input id="progress-range-input" name="progressPercent" type="range" min="0" max="100" step="5" value="45">
+                  <div class="slider-value-badge" id="progress-range-value">45%</div>
+                </div>
+              </label>
+
+              <label class="form-field">
+                <span class="field-label">Today's Progress Notes</span>
+                <textarea id="progress-note-input" name="progressNote" rows="4" placeholder="Record today's quest progress, blockers, and breakthroughs."></textarea>
+              </label>
+
+              <div class="form-footer progress-footer">
+                <p class="form-hint">Submit one update per day to keep the quest log alive.</p>
+                <button class="action-button" type="submit">Log Daily Progress</button>
+              </div>
+            </form>
+
+            <div class="progress-history-wrap">
+              <div class="section-head compact-head">
+                <h4>Update History</h4>
+                <span class="scene-chip" id="history-count-chip">3 Entries</span>
+              </div>
+              <div class="progress-history-list" id="progress-history-list"></div>
+            </div>
+          </section>
+        </div>
+
+        <section class="panel quest-log-panel">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Quest Chronicle</p>
+              <h3>Preparation Log</h3>
+            </div>
+            <span class="scene-chip">Live Updates</span>
+          </div>
+
+          <div class="combat-log" id="combat-log" aria-live="polite">
+            <p>Quest board synchronized. Select a quest or create a new one to continue.</p>
+          </div>
+        </section>
+      </section>
+
+      <section class="scene" id="battle-scene" aria-label="Battle scene" hidden>
+        <div class="battle-screen">
+          <div class="battle-sky"></div>
+          <div class="battle-top-nav">
+            <button class="battle-nav-link" id="back-to-info-btn" type="button">&#9666; Back</button>
+          </div>
+
+          <div class="battle-feed panel" id="battle-feed-panel">
+            <p class="eyebrow">Battle Feed</p>
+            <p class="battle-feed-text" id="battle-status-text">Awaiting your command.</p>
+            <div class="mini-log" id="battle-log" aria-live="polite">
+              <p>Weapons ready. The encounter shifts into combat mode.</p>
+            </div>
+          </div>
+
+          <div class="battle-board">
+            <div class="combatant hero-combatant">
+              <div class="combatant-header">
+                <span class="combatant-name">You</span>
+              </div>
+              <div class="battle-health hero-health">
+                <div class="battle-health-fill hero-health-fill" id="hero-static-fill"></div>
+                <span class="battle-health-text" id="hero-hp-text">72 / 72</span>
+              </div>
+              <div class="battle-actor hero-actor asset-frame battle-stage-frame" id="battle-hero-frame" data-asset-key="heroIdle" data-placeholder-label="HERO IDLE" data-fallback-class="hero-battle-art" aria-label="Hero battle render area">
+                <img class="asset-media" id="battle-hero-media" alt="Hero battle animation">
+                <div class="asset-placeholder">
+                  <span class="asset-label">HERO IDLE</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="combatant monster-combatant">
+              <div class="combatant-header monster-header">
+                <span class="combatant-name">Monster 0</span>
+                <span class="combatant-power">10</span>
+              </div>
+              <div class="battle-health monster-health">
+                <div class="battle-health-fill monster-health-fill" id="battle-hp-fill"></div>
+                <span class="battle-health-text" id="battle-hp-text">120 / 120</span>
+              </div>
+              <p class="monster-status-line" id="battle-monster-intent">Vulnerable 1</p>
+              <div class="battle-actor monster-actor asset-frame battle-stage-frame" id="battle-monster-frame" data-asset-key="monsterIdle" data-placeholder-label="SKELETON IDLE" data-fallback-class="monster-battle-art" aria-label="Monster battle render area">
+                <img class="asset-media" id="battle-monster-media" alt="Monster battle animation">
+                <div class="asset-placeholder">
+                  <span class="asset-label">SKELETON IDLE</span>
+                </div>
+              </div>
+              <div class="xp-popup" id="xp-popup">+40 XP</div>
+            </div>
+          </div>
+
+          <div class="battle-controls">
+            <div class="battle-action-panel">
+              <p class="battle-action-title">Task Command</p>
+              <p class="battle-action-task" id="battle-task-title">Refactor the Dashboard Header</p>
+              <div class="battle-button-row">
+                <button class="end-turn-button" id="battle-attack-btn" type="button">Battle</button>
+                <button class="enemy-debug-button" id="enemy-debug-btn" type="button">Enemy</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="pile pile-left">&#9656; Progress 0</div>
+          <div class="pile pile-right">&#9656; Cleared 5</div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="./js/battle.js"></script>
+</body>
+</html>
