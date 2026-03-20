@@ -17,14 +17,97 @@ const assetConfig = {
   heroIdle: "./assets/hero/__Idle.gif",
   heroRun: "./assets/hero/__Run.gif",
   heroAttack: "./assets/hero/__AttackCombo2hit.gif",
-  heroDeath: "./assets/hero/__Death.gif",
-  monsterIdle: "./assets/monster/skeleton/idle.gif",
-  monsterOnHit: "./assets/monster/skeleton/onhit.gif",
-  monsterShield: "./assets/monster/skeleton/sheild.gif",
-  monsterWalk: "./assets/monster/skeleton/walk.gif",
-  monsterAttack: "./assets/monster/skeleton/Attack.gif",
-  monsterDeath: "./assets/monster/skeleton/death.gif"
+  heroDeath: "./assets/hero/__Death.gif"
 };
+
+const monsterCatalog = [
+  {
+    id: "skeleton",
+    name: "Skeleton",
+    panelName: "Skeleton",
+    battleName: "Monster 0",
+    power: "10",
+    maxHp: 120,
+    infoIntent: "Preparing a distraction attack.",
+    battleIntent: "Vulnerable 1",
+    assets: {
+      idle: "./assets/monster/skeleton/idle.gif",
+      onhit: "./assets/monster/skeleton/onhit.gif",
+      shield: "./assets/monster/skeleton/sheild.gif",
+      walk: "./assets/monster/skeleton/walk.gif",
+      attack: "./assets/monster/skeleton/Attack.gif",
+      death: "./assets/monster/skeleton/death.gif"
+    },
+    reactions: ["onhit", "shield"],
+    reactionCopy: {
+      onhit: "Attack combo lands.",
+      shield: "Skeleton raises its shield."
+    },
+    attackCopy: {
+      advance: "Skeleton rushes toward the hero.",
+      strike: "Skeleton swings its weapon.",
+      retreat: "Skeleton retreats to its starting point.",
+      defeat: "Skeleton collapses into dust.",
+      recovered: "Skeleton braces again."
+    }
+  },
+  {
+    id: "flying-eye",
+    name: "Flying Eye",
+    panelName: "Flying Eye",
+    battleName: "Flying Eye",
+    power: "10",
+    maxHp: 120,
+    infoIntent: "Hovering overhead and reading your next move.",
+    battleIntent: "Watching 1",
+    assets: {
+      idle: "./assets/monster/flying_eye/fly.gif",
+      onhit: "./assets/monster/flying_eye/onhit.gif",
+      walk: "./assets/monster/flying_eye/fly.gif",
+      attack: "./assets/monster/flying_eye/Attack.gif",
+      death: "./assets/monster/flying_eye/death.gif"
+    },
+    reactions: ["onhit"],
+    reactionCopy: {
+      onhit: "Flying Eye reels from the strike."
+    },
+    attackCopy: {
+      advance: "Flying Eye glides toward the hero.",
+      strike: "Flying Eye lashes out from close range.",
+      retreat: "Flying Eye drifts back into the air.",
+      defeat: "Flying Eye drops from the sky.",
+      recovered: "Flying Eye regains its rhythm."
+    }
+  },
+  {
+    id: "goblin",
+    name: "Goblin",
+    panelName: "Goblin",
+    battleName: "Goblin",
+    power: "10",
+    maxHp: 120,
+    infoIntent: "Crouching low and looking for a dirty opening.",
+    battleIntent: "Ambush 1",
+    assets: {
+      idle: "./assets/monster/goblin/idle.gif",
+      onhit: "./assets/monster/goblin/onhit.gif",
+      walk: "./assets/monster/goblin/run.gif",
+      attack: "./assets/monster/goblin/attack.gif",
+      death: "./assets/monster/goblin/death.gif"
+    },
+    reactions: ["onhit"],
+    reactionCopy: {
+      onhit: "Goblin staggers from the strike."
+    },
+    attackCopy: {
+      advance: "Goblin rushes toward the hero.",
+      strike: "Goblin slashes at close range.",
+      retreat: "Goblin scrambles back to safety.",
+      defeat: "Goblin falls and disappears.",
+      recovered: "Goblin regains its footing."
+    }
+  }
+];
 
 const animationTiming = {
   runForwardMs: 850,
@@ -79,8 +162,12 @@ const initialTasks = [
   }
 ];
 
-let tasks = structuredClone(initialTasks);
+let tasks = structuredClone(initialTasks).map((task) => ({
+  ...task,
+  monsterId: randomItem(monsterCatalog).id
+}));
 let selectedTaskId = tasks[0].id;
+let currentMonster = monsterCatalog[0];
 
 const body = document.body;
 const infoScene = document.getElementById("info-scene");
@@ -116,6 +203,13 @@ const battleHeroFrame = document.getElementById("battle-hero-frame");
 const battleHeroMedia = document.getElementById("battle-hero-media");
 const battleMonsterFrame = document.getElementById("battle-monster-frame");
 const battleMonsterMedia = document.getElementById("battle-monster-media");
+const infoMonsterFrame = document.querySelector("#info-scene .monster-panel [data-asset-key='monsterIdle']");
+const infoMonsterMedia = infoMonsterFrame?.querySelector(".asset-media") ?? null;
+const infoMonsterHeading = document.querySelector("#info-scene .monster-panel .panel-title-row h2");
+const infoMonsterLabel = infoMonsterFrame?.querySelector(".asset-label") ?? null;
+const battleMonsterLabel = battleMonsterFrame?.querySelector(".asset-label") ?? null;
+const battleMonsterName = document.querySelector(".monster-combatant .combatant-name");
+const battleMonsterPower = document.querySelector(".monster-combatant .combatant-power");
 const createTaskForm = document.getElementById("create-task-form");
 const taskNameInput = document.getElementById("task-name-input");
 const taskDescriptionInput = document.getElementById("task-description-input");
@@ -144,8 +238,6 @@ const battleIntents = [
   "Telegraphing a low-priority feint."
 ];
 
-const battleReactions = ["onhit", "shield"];
-
 function wait(ms) {
   return new Promise((resolve) => window.setTimeout(resolve, ms));
 }
@@ -161,6 +253,19 @@ function formatDate(dateString) {
 
 function getSelectedTask() {
   return tasks.find((task) => task.id === selectedTaskId) ?? tasks[0];
+}
+
+function getMonsterById(monsterId) {
+  return monsterCatalog.find((monster) => monster.id === monsterId) ?? monsterCatalog[0];
+}
+
+function syncCurrentMonsterToTask(task = getSelectedTask()) {
+  currentMonster = getMonsterById(task.monsterId);
+  battleState.monsterMaxHp = currentMonster.maxHp;
+
+  if (battleState.monsterHp > battleState.monsterMaxHp || battleState.monsterHp <= 0) {
+    battleState.monsterHp = currentMonster.maxHp;
+  }
 }
 
 function getDifficultyLabel(difficulty) {
@@ -220,6 +325,24 @@ function randomItem(items) {
   return items[Math.floor(Math.random() * items.length)];
 }
 
+function setFrameSource(frame, media, src, placeholderText) {
+  if (!frame) {
+    return;
+  }
+
+  const label = frame.querySelector(".asset-label");
+  if (label && placeholderText) {
+    label.textContent = placeholderText;
+  }
+
+  if (!media || !src) {
+    frame.classList.remove("has-asset");
+    return;
+  }
+
+  restartGif(media, src);
+}
+
 function setupAssetFrames() {
   const frames = document.querySelectorAll("[data-asset-key]");
 
@@ -229,7 +352,7 @@ function setupAssetFrames() {
     const fallbackClass = frame.dataset.fallbackClass;
     const media = frame.querySelector(".asset-media");
     const label = frame.querySelector(".asset-label");
-    const src = assetConfig[assetKey];
+    const src = assetKey.startsWith("hero") ? assetConfig[assetKey] : null;
 
     if (fallbackClass) {
       frame.classList.add(fallbackClass);
@@ -239,7 +362,7 @@ function setupAssetFrames() {
       label.textContent = placeholderLabel;
     }
 
-    if (!media || !src) {
+    if (!media) {
       frame.classList.remove("has-asset");
       return;
     }
@@ -253,8 +376,47 @@ function setupAssetFrames() {
       media.removeAttribute("src");
     });
 
-    media.src = src;
+    if (src) {
+      media.src = src;
+    }
   });
+}
+
+function selectRandomMonster() {
+  return randomItem(monsterCatalog);
+}
+
+function applyCurrentMonsterVisuals() {
+  if (infoMonsterHeading) {
+    infoMonsterHeading.textContent = currentMonster.panelName;
+  }
+
+  if (battleMonsterName) {
+    battleMonsterName.textContent = currentMonster.battleName;
+  }
+
+  if (battleMonsterPower) {
+    battleMonsterPower.textContent = currentMonster.power;
+  }
+
+  if (monsterIntent) {
+    monsterIntent.textContent = currentMonster.infoIntent;
+  }
+
+  if (battleMonsterIntent) {
+    battleMonsterIntent.textContent = currentMonster.battleIntent;
+  }
+
+  if (infoMonsterLabel) {
+    infoMonsterLabel.textContent = `${currentMonster.name.toUpperCase()} IDLE`;
+  }
+
+  if (battleMonsterLabel) {
+    battleMonsterLabel.textContent = `${currentMonster.name.toUpperCase()} BATTLE`;
+  }
+
+  setFrameSource(infoMonsterFrame, infoMonsterMedia, currentMonster.assets.idle, `${currentMonster.name.toUpperCase()} IDLE`);
+  setFrameSource(battleMonsterFrame, battleMonsterMedia, currentMonster.assets.idle, `${currentMonster.name.toUpperCase()} BATTLE`);
 }
 
 function setBattleHeroState(state) {
@@ -311,43 +473,43 @@ function setBattleMonsterState(state) {
 
   if (state === "idle") {
     battleMonsterFrame.classList.add("is-returned");
-    restartGif(battleMonsterMedia, assetConfig.monsterIdle);
+    restartGif(battleMonsterMedia, currentMonster.assets.idle);
     return;
   }
 
   if (state === "walkForward") {
     battleMonsterFrame.classList.add("is-walking-forward");
-    restartGif(battleMonsterMedia, assetConfig.monsterWalk);
+    restartGif(battleMonsterMedia, currentMonster.assets.walk);
     return;
   }
 
   if (state === "attack") {
     battleMonsterFrame.classList.add("is-attacking");
-    restartGif(battleMonsterMedia, assetConfig.monsterAttack);
+    restartGif(battleMonsterMedia, currentMonster.assets.attack);
     return;
   }
 
   if (state === "walkBack") {
     battleMonsterFrame.classList.add("is-walking-back");
-    restartGif(battleMonsterMedia, assetConfig.monsterWalk);
+    restartGif(battleMonsterMedia, currentMonster.assets.walk);
     return;
   }
 
   if (state === "onhit") {
     battleMonsterFrame.classList.add("is-hit");
-    restartGif(battleMonsterMedia, assetConfig.monsterOnHit);
+    restartGif(battleMonsterMedia, currentMonster.assets.onhit ?? currentMonster.assets.idle);
     return;
   }
 
   if (state === "shield") {
     battleMonsterFrame.classList.add("is-shield");
-    restartGif(battleMonsterMedia, assetConfig.monsterShield);
+    restartGif(battleMonsterMedia, currentMonster.assets.shield ?? currentMonster.assets.onhit ?? currentMonster.assets.idle);
     return;
   }
 
   if (state === "death") {
     battleMonsterFrame.classList.add("is-death");
-    restartGif(battleMonsterMedia, assetConfig.monsterDeath);
+    restartGif(battleMonsterMedia, currentMonster.assets.death);
   }
 }
 
@@ -447,9 +609,11 @@ function renderBattleState() {
 }
 
 function renderInfoDashboard() {
+  syncCurrentMonsterToTask();
   renderTaskList();
   renderSelectedTask();
   renderProgressHistory();
+  applyCurrentMonsterVisuals();
   renderBattleState();
 }
 
@@ -460,8 +624,7 @@ function updateHeroAttackOffset() {
 
   const heroRect = battleHeroFrame.getBoundingClientRect();
   const monsterRect = battleMonsterFrame.getBoundingClientRect();
-  const gap = 110;
-  const targetX = Math.max(0, monsterRect.left - heroRect.right - gap);
+  const targetX = Math.max(0, (monsterRect.left + monsterRect.right) / 2 - heroRect.right);
   battleHeroFrame.style.setProperty("--hero-attack-x", `${targetX}px`);
 }
 
@@ -478,7 +641,7 @@ function updateMonsterAttackOffset() {
 }
 
 async function playMonsterDeathSequence() {
-  battleStatusText.textContent = "Skeleton collapses into dust.";
+  battleStatusText.textContent = currentMonster.attackCopy.defeat;
   setBattleMonsterState("death");
   await wait(animationTiming.monsterDeathMs);
   battleMonsterFrame.classList.add("faded-out");
@@ -499,11 +662,15 @@ function switchScene(nextScene) {
   body.classList.toggle("battle-mode", showBattle);
 
   if (showBattle) {
+    syncCurrentMonsterToTask();
+    battleState.monsterHp = currentMonster.maxHp;
+    applyCurrentMonsterVisuals();
     updateHeroAttackOffset();
     updateMonsterAttackOffset();
     setBattleHeroState(battleState.heroHp > 0 ? "idle" : "death");
     setBattleMonsterState(battleState.monsterHp > 0 ? "idle" : "death");
-    addLogEntry(battleLog, `Scene switch complete. Combat display engaged for ${getSelectedTask().name}.`);
+    renderBattleState();
+    addLogEntry(battleLog, `Scene switch complete. Combat display engaged for ${getSelectedTask().name} against ${currentMonster.name}.`);
   } else {
     addLogEntry(combatLog, "Returned to the info scene.");
   }
@@ -514,10 +681,10 @@ async function playHeroAttackSequence() {
   battleStatusText.textContent = "Hero sprints toward the target.";
   await wait(animationTiming.runForwardMs);
 
-  const monsterReaction = randomItem(battleReactions);
+  const monsterReaction = randomItem(currentMonster.reactions);
   setBattleHeroState("attack");
   setBattleMonsterState(monsterReaction);
-  battleStatusText.textContent = monsterReaction === "shield" ? "Skeleton raises its shield." : "Attack combo lands.";
+  battleStatusText.textContent = currentMonster.reactionCopy[monsterReaction] ?? "Attack combo lands.";
   await wait(animationTiming.attackMs);
 
   if (battleState.monsterHp > 0) {
@@ -532,15 +699,15 @@ async function playHeroAttackSequence() {
 
 async function playEnemyAttackSequence() {
   setBattleMonsterState("walkForward");
-  battleStatusText.textContent = "Skeleton rushes toward the hero.";
+  battleStatusText.textContent = currentMonster.attackCopy.advance;
   await wait(animationTiming.enemyRunMs);
 
   setBattleMonsterState("attack");
-  battleStatusText.textContent = "Skeleton swings its weapon.";
+  battleStatusText.textContent = currentMonster.attackCopy.strike;
   await wait(animationTiming.enemyAttackMs);
 
   battleState.heroHp = Math.max(0, battleState.heroHp - battleState.enemyAttackDamage);
-  addLogEntry(combatLog, `Skeleton dealt ${battleState.enemyAttackDamage} damage.`);
+  addLogEntry(combatLog, `${currentMonster.name} dealt ${battleState.enemyAttackDamage} damage.`);
   addLogEntry(battleLog, `Enemy debug attack dealt ${battleState.enemyAttackDamage} damage.`);
   renderBattleState();
 
@@ -549,7 +716,7 @@ async function playEnemyAttackSequence() {
   }
 
   setBattleMonsterState("walkBack");
-  battleStatusText.textContent = "Skeleton retreats to its starting point.";
+  battleStatusText.textContent = currentMonster.attackCopy.retreat;
   await wait(animationTiming.enemyReturnMs);
 
   if (battleState.monsterHp > 0) {
@@ -573,15 +740,15 @@ async function resolveTaskStrike() {
 
   const damageMessage = `You completed a task strike and dealt ${battleState.attackDamage} damage.`;
   monsterIntent.textContent = randomItem(battleIntents);
-  battleMonsterIntent.textContent = battleState.monsterHp > 0 ? "Skeleton braces again." : "Defeated";
+  battleMonsterIntent.textContent = battleState.monsterHp > 0 ? currentMonster.attackCopy.recovered : "Defeated";
   progressText.textContent = `Momentum gained. Enemy HP reduced to ${battleState.monsterHp}.`;
   addLogEntry(combatLog, damageMessage);
   addLogEntry(battleLog, damageMessage);
 
   if (battleState.monsterHp === 0) {
     await playMonsterDeathSequence();
-    addLogEntry(combatLog, "Victory. The skeleton has been defeated.");
-    addLogEntry(battleLog, "Skeleton death animation finished.");
+    addLogEntry(combatLog, `Victory. ${currentMonster.name} has been defeated.`);
+    addLogEntry(battleLog, `${currentMonster.name} death animation finished.`);
   }
 
   battleState.actionLocked = false;
@@ -619,6 +786,8 @@ function handleCreateTask(event) {
     return;
   }
 
+  const assignedMonster = selectRandomMonster();
+
   const newTask = {
     id: Date.now(),
     name,
@@ -626,6 +795,7 @@ function handleCreateTask(event) {
     difficulty,
     deadline,
     progress: 0,
+    monsterId: assignedMonster.id,
     latestNote: "Quest created. Awaiting the first daily progress update.",
     updates: [
       {
@@ -683,8 +853,11 @@ window.addEventListener("resize", () => {
 
 setupAssetFrames();
 selectDifficulty(taskDifficultyInput.value);
+applyCurrentMonsterVisuals();
 updateHeroAttackOffset();
 updateMonsterAttackOffset();
 setBattleHeroState("idle");
 setBattleMonsterState("idle");
 renderInfoDashboard();
+
+
