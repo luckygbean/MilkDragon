@@ -1,10 +1,24 @@
+const API_BASE = "http://127.0.0.1:5000/api";
+
+async function api(path, options = {}) {
+  const res = await fetch(`${API_BASE}${path}`, {
+    headers: { "Content-Type": "application/json" },
+    ...options,
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: "Request failed" }));
+    throw new Error(err.error || `API error: ${res.status}`);
+  }
+  return res.json();
+}
+
 const battleState = {
-  heroLevel: 7,
-  currentXp: 180,
-  xpToLevel: 300,
+  heroLevel: 1,
+  currentXp: 0,
+  xpToLevel: 100,
   xpGainPerHit: 40,
-  heroHp: 72,
-  heroMaxHp: 72,
+  heroHp: 60,
+  heroMaxHp: 60,
   monsterHp: 120,
   monsterMaxHp: 120,
   attackDamage: 40,
@@ -120,62 +134,16 @@ const animationTiming = {
   monsterDeathMs: 1000
 };
 
-const initialTasks = [
-  {
-    id: 1,
-    name: "Refactor the Dashboard Header",
-    description: "Clean up the layout, improve spacing, and make the header responsive for tablet and desktop breakpoints.",
-    difficulty: "Hard",
-    deadline: "2026-03-24",
-    progress: 45,
-    latestNote: "Mapped the spacing issues and isolated the responsive breakpoints.",
-    updates: [
-      { date: "2026-03-18", percent: 45, note: "Mapped the spacing issues and isolated the responsive breakpoints." },
-      { date: "2026-03-17", percent: 30, note: "Rebuilt the header structure and cleaned up utility classes." },
-      { date: "2026-03-16", percent: 15, note: "Audited the layout and captured current UX issues." }
-    ]
-  },
-  {
-    id: 2,
-    name: "Write API Integration Tests",
-    description: "Prepare stable request mocks and cover the main authentication and task retrieval flows.",
-    difficulty: "Medium",
-    deadline: "2026-03-22",
-    progress: 60,
-    latestNote: "Finished success-path tests and documented two missing edge cases.",
-    updates: [
-      { date: "2026-03-18", percent: 60, note: "Finished success-path tests and documented two missing edge cases." },
-      { date: "2026-03-17", percent: 40, note: "Added fixtures for login and task list payloads." }
-    ]
-  },
-  {
-    id: 3,
-    name: "Prepare Demo Presentation",
-    description: "Build a polished walkthrough for the software engineering project demo with clear UX beats.",
-    difficulty: "Easy",
-    deadline: "2026-03-20",
-    progress: 20,
-    latestNote: "Outlined the storyline and gathered the first product screenshots.",
-    updates: [
-      { date: "2026-03-18", percent: 20, note: "Outlined the storyline and gathered the first product screenshots." }
-    ]
-  }
-];
-
-let tasks = structuredClone(initialTasks).map((task) => ({
-  ...task,
-  monsterId: randomItem(monsterCatalog).id
-}));
-let selectedTaskId = tasks[0].id;
+let tasks = [];
+let completedTasks = [];
+let selectedTaskId = null;
 let currentMonster = monsterCatalog[0];
 
 const body = document.body;
 const infoScene = document.getElementById("info-scene");
 const battleScene = document.getElementById("battle-scene");
-const startBattleButton = document.getElementById("start-battle-btn");
+
 const backToInfoButton = document.getElementById("back-to-info-btn");
-const battleAttackButton = document.getElementById("battle-attack-btn");
-const enemyDebugButton = document.getElementById("enemy-debug-btn");
 const xpFill = document.getElementById("xp-fill");
 const xpText = document.getElementById("xp-text");
 const hpFill = document.getElementById("hp-fill");
@@ -197,7 +165,6 @@ const selectedDeadline = document.getElementById("selected-deadline");
 const selectedDifficultyTag = document.getElementById("selected-difficulty-tag");
 const selectedProgressPercent = document.getElementById("selected-progress-percent");
 const selectedProgressFill = document.getElementById("selected-progress-fill");
-const battleTaskTitle = document.getElementById("battle-task-title");
 const xpPopup = document.getElementById("xp-popup");
 const battleHeroFrame = document.getElementById("battle-hero-frame");
 const battleHeroMedia = document.getElementById("battle-hero-media");
@@ -218,6 +185,8 @@ const difficultyToggle = document.getElementById("difficulty-toggle");
 const taskDifficultyInput = document.getElementById("task-difficulty-input");
 const activeTaskList = document.getElementById("active-task-list");
 const questCountChip = document.getElementById("quest-count-chip");
+const completedTaskList = document.getElementById("completed-task-list");
+const completedCountChip = document.getElementById("completed-count-chip");
 const selectedTaskChip = document.getElementById("selected-task-chip");
 const detailTaskName = document.getElementById("detail-task-name");
 const detailTaskDescription = document.getElementById("detail-task-description");
@@ -230,6 +199,39 @@ const progressRangeValue = document.getElementById("progress-range-value");
 const progressNoteInput = document.getElementById("progress-note-input");
 const progressHistoryList = document.getElementById("progress-history-list");
 const historyCountChip = document.getElementById("history-count-chip");
+const questCompleteModal = document.getElementById("quest-complete-modal");
+const modalTaskName = document.getElementById("modal-task-name");
+const modalBonusXp = document.getElementById("modal-bonus-xp");
+const modalTotalXp = document.getElementById("modal-total-xp");
+const modalAchievements = document.getElementById("modal-achievements");
+const modalCloseBtn = document.getElementById("modal-close-btn");
+const editQuestModal = document.getElementById("edit-quest-modal");
+const editTaskForm = document.getElementById("edit-task-form");
+const editTaskId = document.getElementById("edit-task-id");
+const editTaskName = document.getElementById("edit-task-name");
+const editTaskDescription = document.getElementById("edit-task-description");
+const editTaskDeadline = document.getElementById("edit-task-deadline");
+const editDifficultyToggle = document.getElementById("edit-difficulty-toggle");
+const editTaskDifficulty = document.getElementById("edit-task-difficulty");
+const editDeleteBtn = document.getElementById("edit-delete-btn");
+const editCancelBtn = document.getElementById("edit-cancel-btn");
+const achievementsBtn = document.getElementById("achievements-btn");
+const achievementsModal = document.getElementById("achievements-modal");
+const achievementsGrid = document.getElementById("achievements-grid");
+const achievementsCloseBtn = document.getElementById("achievements-close-btn");
+
+const ACHIEVEMENT_ICONS = {
+  sword: "\u2694\uFE0F",
+  skull: "\uD83D\uDC80",
+  crown: "\uD83D\uDC51",
+  flame: "\uD83D\uDD25",
+  lightning: "\u26A1",
+  star: "\u2B50",
+  medal: "\uD83C\uDFC5",
+  shield: "\uD83D\uDEE1\uFE0F",
+  book: "\uD83D\uDCDA",
+  trophy: "\uD83C\uDFC6",
+};
 
 const battleIntents = [
   "Preparing a distraction attack.",
@@ -252,7 +254,7 @@ function formatDate(dateString) {
 }
 
 function getSelectedTask() {
-  return tasks.find((task) => task.id === selectedTaskId) ?? tasks[0];
+  return tasks.find((task) => task.id === selectedTaskId) ?? tasks[0] ?? null;
 }
 
 function getMonsterById(monsterId) {
@@ -260,12 +262,13 @@ function getMonsterById(monsterId) {
 }
 
 function syncCurrentMonsterToTask(task = getSelectedTask()) {
+  if (!task) return;
   currentMonster = getMonsterById(task.monsterId);
-  battleState.monsterMaxHp = currentMonster.maxHp;
+  battleState.monsterMaxHp = task.monsterMaxHp || currentMonster.maxHp;
+  battleState.enemyAttackDamage = task.monsterPower || parseInt(currentMonster.power) || 24;
 
-  if (battleState.monsterHp > battleState.monsterMaxHp || battleState.monsterHp <= 0) {
-    battleState.monsterHp = currentMonster.maxHp;
-  }
+  // Calculate HP from task progress: a brand-new task (0%) has full HP
+  battleState.monsterHp = Math.max(0, Math.round(battleState.monsterMaxHp * (100 - task.progress) / 100));
 }
 
 function getDifficultyLabel(difficulty) {
@@ -308,6 +311,34 @@ function showXpPopup(amount) {
   xpPopup.classList.remove("show");
   void xpPopup.offsetWidth;
   xpPopup.classList.add("show");
+  xpPopup.addEventListener("animationend", () => {
+    xpPopup.classList.remove("show");
+  }, { once: true });
+}
+
+function showQuestCompleteModal(taskName, bonusXp, totalXp, achievements) {
+  modalTaskName.textContent = taskName;
+  modalBonusXp.textContent = `+${bonusXp}`;
+  modalTotalXp.textContent = `+${totalXp}`;
+
+  if (achievements && achievements.length > 0) {
+    modalAchievements.hidden = false;
+    modalAchievements.innerHTML = `<p class="modal-achievement-title">Achievements Unlocked</p>` +
+      achievements.map((a) => `<span class="modal-achievement-name">${a.name || a}</span>`).join("");
+  } else {
+    modalAchievements.hidden = true;
+  }
+
+  questCompleteModal.hidden = false;
+
+  return new Promise((resolve) => {
+    const handler = () => {
+      questCompleteModal.hidden = true;
+      modalCloseBtn.removeEventListener("click", handler);
+      resolve();
+    };
+    modalCloseBtn.addEventListener("click", handler);
+  });
 }
 
 function applyXp(amount) {
@@ -535,20 +566,59 @@ function renderTaskList() {
         <span class="quest-pill ${getDifficultyClass(task.difficulty)}">${task.difficulty}</span>
         <span class="quest-pill ${getDifficultyClass(task.difficulty)}">${task.progress}% Complete</span>
       </div>
+      <div class="quest-item-actions">
+        <span class="quest-edit-btn" data-edit-id="${task.id}">Edit</span>
+      </div>
     `;
 
-    button.addEventListener("click", () => {
+    button.addEventListener("click", (e) => {
+      if (e.target.closest(".quest-edit-btn")) return;
       selectedTaskId = task.id;
       renderInfoDashboard();
       addLogEntry(combatLog, `Quest selected: ${task.name}.`);
+    });
+
+    button.querySelector(".quest-edit-btn").addEventListener("click", (e) => {
+      e.stopPropagation();
+      openEditModal(task.id);
     });
 
     activeTaskList.appendChild(button);
   });
 }
 
+function renderCompletedTasks() {
+  completedTaskList.innerHTML = "";
+  completedCountChip.textContent = `${completedTasks.length} Cleared`;
+
+  if (completedTasks.length === 0) {
+    completedTaskList.innerHTML = `<p class="completed-quests-empty">No completed quests yet. Slay some monsters!</p>`;
+    return;
+  }
+
+  completedTasks.forEach((task) => {
+    const div = document.createElement("div");
+    div.className = "completed-quest-item";
+    div.innerHTML = `
+      <div class="quest-item-header">
+        <div>
+          <strong>${task.name}</strong>
+          <p>${task.description}</p>
+        </div>
+        <span class="quest-deadline-badge">${formatDate(task.deadline)}</span>
+      </div>
+      <div class="quest-item-meta">
+        <span class="quest-pill ${getDifficultyClass(task.difficulty)}">${task.difficulty}</span>
+        <span class="completed-badge">Completed</span>
+      </div>
+    `;
+    completedTaskList.appendChild(div);
+  });
+}
+
 function renderSelectedTask() {
   const task = getSelectedTask();
+  if (!task) return;
   const difficultyLabel = getDifficultyLabel(task.difficulty);
 
   taskTitle.textContent = task.name;
@@ -564,7 +634,9 @@ function renderSelectedTask() {
   detailDeadline.textContent = formatDate(task.deadline);
   detailCurrentProgress.textContent = `${task.progress}%`;
   selectedTaskChip.textContent = `Selected: ${task.name}`;
-  battleTaskTitle.textContent = task.name;
+
+  progressRangeInput.min = "0";
+  progressRangeInput.dataset.floor = String(task.progress);
   progressRangeInput.value = String(task.progress);
   progressRangeValue.textContent = `${task.progress}%`;
 }
@@ -572,6 +644,7 @@ function renderSelectedTask() {
 function renderProgressHistory() {
   const task = getSelectedTask();
   progressHistoryList.innerHTML = "";
+  if (!task) return;
   historyCountChip.textContent = `${task.updates.length} Entries`;
 
   task.updates.forEach((update) => {
@@ -603,14 +676,12 @@ function renderBattleState() {
   battleHpText.textContent = `${battleState.monsterHp} / ${battleState.monsterMaxHp}`;
   playerLevel.textContent = battleState.heroLevel;
 
-  const locked = battleState.actionLocked || battleState.heroHp <= 0 || battleState.monsterHp <= 0;
-  battleAttackButton.disabled = locked;
-  enemyDebugButton.disabled = locked;
 }
 
 function renderInfoDashboard() {
   syncCurrentMonsterToTask();
   renderTaskList();
+  renderCompletedTasks();
   renderSelectedTask();
   renderProgressHistory();
   applyCurrentMonsterVisuals();
@@ -654,7 +725,7 @@ async function playHeroDeathSequence() {
   battleHeroFrame.classList.add("faded-out");
 }
 
-function switchScene(nextScene) {
+function switchScene(nextScene, resetMonsterHp = true) {
   const showBattle = nextScene === "battle";
   battleState.currentScene = nextScene;
   infoScene.hidden = showBattle;
@@ -662,8 +733,11 @@ function switchScene(nextScene) {
   body.classList.toggle("battle-mode", showBattle);
 
   if (showBattle) {
+    xpPopup.classList.remove("show");
     syncCurrentMonsterToTask();
-    battleState.monsterHp = currentMonster.maxHp;
+    if (resetMonsterHp) {
+      battleState.monsterHp = battleState.monsterMaxHp;
+    }
     applyCurrentMonsterVisuals();
     updateHeroAttackOffset();
     updateMonsterAttackOffset();
@@ -724,49 +798,6 @@ async function playEnemyAttackSequence() {
   }
 }
 
-async function resolveTaskStrike() {
-  if (battleState.monsterHp <= 0 || battleState.actionLocked || battleState.heroHp <= 0) {
-    return;
-  }
-
-  battleState.actionLocked = true;
-  renderBattleState();
-  await playHeroAttackSequence();
-
-  battleState.monsterHp = Math.max(0, battleState.monsterHp - battleState.attackDamage);
-  applyXp(battleState.xpGainPerHit);
-  renderBattleState();
-  showXpPopup(battleState.xpGainPerHit);
-
-  const damageMessage = `You completed a task strike and dealt ${battleState.attackDamage} damage.`;
-  monsterIntent.textContent = randomItem(battleIntents);
-  battleMonsterIntent.textContent = battleState.monsterHp > 0 ? currentMonster.attackCopy.recovered : "Defeated";
-  progressText.textContent = `Momentum gained. Enemy HP reduced to ${battleState.monsterHp}.`;
-  addLogEntry(combatLog, damageMessage);
-  addLogEntry(battleLog, damageMessage);
-
-  if (battleState.monsterHp === 0) {
-    await playMonsterDeathSequence();
-    addLogEntry(combatLog, `Victory. ${currentMonster.name} has been defeated.`);
-    addLogEntry(battleLog, `${currentMonster.name} death animation finished.`);
-  }
-
-  battleState.actionLocked = false;
-  renderBattleState();
-}
-
-async function triggerEnemyDebugAttack() {
-  if (battleState.monsterHp <= 0 || battleState.actionLocked || battleState.heroHp <= 0) {
-    return;
-  }
-
-  battleState.actionLocked = true;
-  renderBattleState();
-  await playEnemyAttackSequence();
-  battleState.actionLocked = false;
-  renderBattleState();
-}
-
 function selectDifficulty(nextDifficulty) {
   taskDifficultyInput.value = nextDifficulty;
   difficultyToggle.querySelectorAll(".difficulty-option").forEach((button) => {
@@ -774,7 +805,107 @@ function selectDifficulty(nextDifficulty) {
   });
 }
 
-function handleCreateTask(event) {
+function selectEditDifficulty(nextDifficulty) {
+  editTaskDifficulty.value = nextDifficulty;
+  editDifficultyToggle.querySelectorAll(".difficulty-option").forEach((btn) => {
+    btn.classList.toggle("is-active", btn.dataset.difficulty === nextDifficulty);
+  });
+}
+
+function openEditModal(taskId) {
+  const task = tasks.find((t) => t.id === taskId);
+  if (!task) return;
+
+  editTaskId.value = taskId;
+  editTaskName.value = task.name;
+  editTaskDescription.value = task.description;
+  editTaskDeadline.value = task.deadline;
+  selectEditDifficulty(task.difficulty);
+  editQuestModal.hidden = false;
+}
+
+function closeEditModal() {
+  editQuestModal.hidden = true;
+}
+
+async function handleEditSave(event) {
+  event.preventDefault();
+  const taskId = Number(editTaskId.value);
+  const name = editTaskName.value.trim();
+  const description = editTaskDescription.value.trim();
+  const difficulty = editTaskDifficulty.value;
+  const deadline = editTaskDeadline.value;
+
+  if (!name || !description || !deadline) return;
+
+  try {
+    const data = await api(`/tasks/${taskId}`, {
+      method: "PUT",
+      body: JSON.stringify({ name, description, difficulty, deadline }),
+    });
+
+    const idx = tasks.findIndex((t) => t.id === taskId);
+    if (idx !== -1) tasks[idx] = data.task;
+
+    closeEditModal();
+    renderInfoDashboard();
+    addLogEntry(combatLog, `Quest updated: ${data.task.name}.`);
+  } catch (err) {
+    addLogEntry(combatLog, `Failed to update quest: ${err.message}`);
+  }
+}
+
+async function handleEditDelete() {
+  const taskId = Number(editTaskId.value);
+  const task = tasks.find((t) => t.id === taskId);
+  if (!task) return;
+
+  if (!confirm(`Are you sure you want to delete "${task.name}"? This cannot be undone.`)) return;
+
+  try {
+    await api(`/tasks/${taskId}`, { method: "DELETE" });
+
+    tasks = tasks.filter((t) => t.id !== taskId);
+    if (selectedTaskId === taskId) {
+      selectedTaskId = tasks.length > 0 ? tasks[0].id : null;
+    }
+
+    closeEditModal();
+    renderInfoDashboard();
+    addLogEntry(combatLog, `Quest deleted: ${task.name}.`);
+  } catch (err) {
+    addLogEntry(combatLog, `Failed to delete quest: ${err.message}`);
+  }
+}
+
+async function openAchievementsModal() {
+  try {
+    const data = await api("/achievements");
+    const achievements = data.achievements;
+
+    achievementsGrid.innerHTML = achievements.map((ach) => {
+      const icon = ACHIEVEMENT_ICONS[ach.icon] || ACHIEVEMENT_ICONS.trophy;
+      const stateClass = ach.unlocked ? "is-unlocked" : "is-locked";
+      const statusLabel = ach.unlocked ? "Unlocked" : "Locked";
+      return `
+        <div class="achievement-card ${stateClass}">
+          <div class="achievement-icon">${icon}</div>
+          <div class="achievement-info">
+            <p class="achievement-name">${ach.name}</p>
+            <p class="achievement-desc">${ach.description}</p>
+          </div>
+          <span class="achievement-status">${statusLabel}</span>
+        </div>
+      `;
+    }).join("");
+
+    achievementsModal.hidden = false;
+  } catch (err) {
+    addLogEntry(combatLog, `Failed to load achievements: ${err.message}`);
+  }
+}
+
+async function handleCreateTask(event) {
   event.preventDefault();
 
   const name = taskNameInput.value.trim();
@@ -786,78 +917,203 @@ function handleCreateTask(event) {
     return;
   }
 
-  const assignedMonster = selectRandomMonster();
+  try {
+    const data = await api("/tasks", {
+      method: "POST",
+      body: JSON.stringify({ name, description, difficulty, deadline }),
+    });
 
-  const newTask = {
-    id: Date.now(),
-    name,
-    description,
-    difficulty,
-    deadline,
-    progress: 0,
-    monsterId: assignedMonster.id,
-    latestNote: "Quest created. Awaiting the first daily progress update.",
-    updates: [
-      {
-        date: new Date().toISOString().slice(0, 10),
-        percent: 0,
-        note: "Quest created. Awaiting the first daily progress update."
-      }
-    ]
-  };
-
-  tasks.unshift(newTask);
-  selectedTaskId = newTask.id;
-  createTaskForm.reset();
-  selectDifficulty("Easy");
-  renderInfoDashboard();
-  addLogEntry(combatLog, `New quest created: ${newTask.name}.`);
+    tasks.unshift(data.task);
+    selectedTaskId = data.task.id;
+    createTaskForm.reset();
+    selectDifficulty("Easy");
+    renderInfoDashboard();
+    addLogEntry(combatLog, `New quest created: ${data.task.name}.`);
+  } catch (err) {
+    addLogEntry(combatLog, `Failed to create quest: ${err.message}`);
+  }
 }
 
-function handleProgressUpdate(event) {
+async function handleProgressUpdate(event) {
   event.preventDefault();
   const task = getSelectedTask();
+  if (!task) return;
+
   const percent = Number(progressRangeInput.value);
   const note = progressNoteInput.value.trim() || "Daily progress update submitted.";
-  const today = new Date().toISOString().slice(0, 10);
 
-  task.progress = percent;
-  task.latestNote = note;
-  task.updates.unshift({
-    date: today,
-    percent,
-    note
-  });
+  if (percent <= task.progress) {
+    addLogEntry(combatLog, "Progress must be higher than current value.");
+    return;
+  }
 
-  progressNoteInput.value = "";
-  renderInfoDashboard();
-  addLogEntry(combatLog, `Daily progress logged for ${task.name}: ${percent}%.`);
+  try {
+    const data = await api(`/tasks/${task.id}/progress`, {
+      method: "POST",
+      body: JSON.stringify({ percent, note }),
+    });
+
+    // Sync player stats
+    battleState.heroLevel = data.playerStats.heroLevel;
+    battleState.currentXp = data.playerStats.currentXp;
+    battleState.xpToLevel = data.playerStats.xpToLevel;
+    battleState.heroHp = data.playerStats.heroHp || battleState.heroHp;
+    battleState.heroMaxHp = data.playerStats.heroMaxHp || battleState.heroMaxHp;
+
+    // Set up battle state: show HP before damage, then animate
+    const battle = data.battle;
+    battleState.monsterMaxHp = battle.monsterMaxHp;
+    // Show pre-damage HP during animation
+    battleState.monsterHp = battle.monsterHpRemaining + battle.damageDealt;
+
+    // Switch to battle scene without resetting monster HP
+    switchScene("battle", false);
+    battleState.actionLocked = true;
+    renderBattleState();
+
+    await playHeroAttackSequence();
+
+    // Drop HP after the attack lands
+    battleState.monsterHp = battle.monsterHpRemaining;
+    renderBattleState();
+    showXpPopup(data.xpAwarded);
+
+    const damageMessage = `Progress strike! Dealt ${battle.damageDealt} damage (${battle.progressDelta}% progress).`;
+    addLogEntry(combatLog, damageMessage);
+    addLogEntry(battleLog, damageMessage);
+
+    if (data.playerStats.leveledUp) {
+      addLogEntry(combatLog, `Level up! Reached level ${data.playerStats.heroLevel}.`);
+      addLogEntry(battleLog, `Power surge. Level ${data.playerStats.heroLevel} unlocked in battle.`);
+    }
+
+    if (data.achievementsUnlocked && data.achievementsUnlocked.length > 0) {
+      data.achievementsUnlocked.forEach((a) => {
+        const achName = a.name || a;
+        addLogEntry(combatLog, `Achievement unlocked: ${achName}!`);
+        addLogEntry(battleLog, `Achievement unlocked: ${achName}!`);
+      });
+    }
+
+    // If monster is defeated, play death sequence then show completion modal
+    if (battle.monsterDefeated) {
+      battleMonsterIntent.textContent = "Defeated";
+      await playMonsterDeathSequence();
+      addLogEntry(combatLog, `Victory! ${currentMonster.name} has been defeated. Task complete!`);
+      addLogEntry(battleLog, `${currentMonster.name} falls. Quest finished.`);
+
+      battleState.actionLocked = false;
+      renderBattleState();
+
+      // Move task from active to completed
+      Object.assign(task, data.task);
+      completedTasks.unshift({ ...task });
+      tasks = tasks.filter((t) => t.id !== task.id);
+      if (selectedTaskId === task.id) {
+        selectedTaskId = tasks.length > 0 ? tasks[0].id : null;
+      }
+      progressNoteInput.value = "";
+
+      // Show congratulations modal — waits for user to click Continue
+      await showQuestCompleteModal(
+        task.name,
+        battle.completionBonus,
+        data.xpAwarded,
+        data.achievementsUnlocked
+      );
+
+      switchScene("info");
+      renderInfoDashboard();
+      return;
+    }
+
+    battleMonsterIntent.textContent = currentMonster.attackCopy.recovered;
+    battleState.actionLocked = false;
+    renderBattleState();
+
+    // Update local task data
+    Object.assign(task, data.task);
+    progressNoteInput.value = "";
+
+    // Auto-return to info scene after a short pause
+    await wait(1500);
+    switchScene("info");
+    renderInfoDashboard();
+  } catch (err) {
+    addLogEntry(combatLog, `Failed to update progress: ${err.message}`);
+  }
 }
 
-startBattleButton.addEventListener("click", () => switchScene("battle"));
+
 backToInfoButton.addEventListener("click", () => switchScene("info"));
-battleAttackButton.addEventListener("click", () => void resolveTaskStrike());
-enemyDebugButton.addEventListener("click", () => void triggerEnemyDebugAttack());
 createTaskForm.addEventListener("submit", handleCreateTask);
 progressUpdateForm.addEventListener("submit", handleProgressUpdate);
 progressRangeInput.addEventListener("input", () => {
+  const floor = Number(progressRangeInput.dataset.floor) || 0;
+  if (Number(progressRangeInput.value) < floor) {
+    progressRangeInput.value = String(floor);
+  }
   progressRangeValue.textContent = `${progressRangeInput.value}%`;
 });
 difficultyToggle.querySelectorAll(".difficulty-option").forEach((button) => {
   button.addEventListener("click", () => selectDifficulty(button.dataset.difficulty));
 });
+editDifficultyToggle.querySelectorAll(".difficulty-option").forEach((button) => {
+  button.addEventListener("click", () => selectEditDifficulty(button.dataset.difficulty));
+});
+editTaskForm.addEventListener("submit", handleEditSave);
+editCancelBtn.addEventListener("click", closeEditModal);
+editDeleteBtn.addEventListener("click", handleEditDelete);
+achievementsBtn.addEventListener("click", openAchievementsModal);
+achievementsCloseBtn.addEventListener("click", () => { achievementsModal.hidden = true; });
 window.addEventListener("resize", () => {
   updateHeroAttackOffset();
   updateMonsterAttackOffset();
 });
 
-setupAssetFrames();
-selectDifficulty(taskDifficultyInput.value);
-applyCurrentMonsterVisuals();
-updateHeroAttackOffset();
-updateMonsterAttackOffset();
-setBattleHeroState("idle");
-setBattleMonsterState("idle");
-renderInfoDashboard();
+async function initApp() {
+  setupAssetFrames();
+  selectDifficulty(taskDifficultyInput.value);
+
+  try {
+    const [taskData, completedData, statsData] = await Promise.all([
+      api("/tasks"),
+      api("/tasks?include_completed=true"),
+      api("/player/stats"),
+    ]);
+
+    tasks = taskData.tasks;
+    completedTasks = completedData.tasks.filter((t) => t.isCompleted);
+
+    Object.assign(battleState, {
+      heroLevel: statsData.heroLevel,
+      currentXp: statsData.currentXp,
+      xpToLevel: statsData.xpToLevel,
+      heroHp: statsData.heroHp,
+      heroMaxHp: statsData.heroMaxHp,
+    });
+
+    if (tasks.length > 0) {
+      selectedTaskId = tasks[0].id;
+      const firstTask = tasks[0];
+      const cat = monsterCatalog.find((m) => m.id === firstTask.monsterId);
+      if (cat) {
+        cat.maxHp = firstTask.monsterMaxHp;
+        cat.power = String(firstTask.monsterPower);
+      }
+    }
+  } catch (err) {
+    addLogEntry(combatLog, `Backend not available, using offline mode. (${err.message})`);
+  }
+
+  applyCurrentMonsterVisuals();
+  updateHeroAttackOffset();
+  updateMonsterAttackOffset();
+  setBattleHeroState("idle");
+  setBattleMonsterState("idle");
+  renderInfoDashboard();
+}
+
+initApp();
 
 

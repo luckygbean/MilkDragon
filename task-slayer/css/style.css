@@ -1,3 +1,25 @@
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 6px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
 :root {
   --bg-primary: #091224;
   --bg-secondary: #111a32;
@@ -258,16 +280,12 @@ body.battle-mode .scene-stack {
 
 .action-button,
 .battle-nav-link,
-.end-turn-button,
-.enemy-debug-button,
 .difficulty-option,
 .quest-list-item {
   transition: transform 180ms ease, box-shadow 180ms ease, filter 180ms ease, opacity 180ms ease, border-color 180ms ease, background 180ms ease;
 }
 
-.action-button,
-.end-turn-button,
-.enemy-debug-button {
+.action-button {
   border: 0;
   cursor: pointer;
 }
@@ -283,8 +301,6 @@ body.battle-mode .scene-stack {
 }
 
 .action-button:hover,
-.end-turn-button:hover,
-.enemy-debug-button:hover,
 .difficulty-option:hover,
 .quest-list-item:hover {
   transform: translateY(-2px);
@@ -292,23 +308,16 @@ body.battle-mode .scene-stack {
 }
 
 .action-button:active,
-.end-turn-button:active,
-.enemy-debug-button:active,
 .difficulty-option:active {
   transform: translateY(1px) scale(0.995);
 }
 
-.action-button:disabled,
-.end-turn-button:disabled,
-.enemy-debug-button:disabled {
+.action-button:disabled {
   cursor: not-allowed;
   opacity: 0.72;
   filter: grayscale(0.2);
 }
 
-.start-battle-button {
-  min-width: 210px;
-}
 
 .info-overview-grid {
   display: grid;
@@ -320,8 +329,9 @@ body.battle-mode .scene-stack {
 .current-quest-panel,
 .create-quest-panel,
 .active-quests-panel,
+.completed-quests-panel,
 .quest-detail-panel {
-  padding: 24px;
+  padding: 20px;
 }
 
 .compact-portrait {
@@ -411,6 +421,9 @@ body.battle-mode .scene-stack {
 .active-quest-list {
   display: grid;
   gap: 12px;
+  max-height: 540px;
+  overflow-y: auto;
+  padding-right: 4px;
 }
 
 .stat-row {
@@ -489,7 +502,13 @@ body.battle-mode .scene-stack {
 
 .quest-dashboard-grid {
   display: grid;
-  grid-template-columns: minmax(320px, 0.95fr) minmax(300px, 0.85fr) minmax(340px, 1fr);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
+  gap: 22px;
+  align-items: start;
+}
+
+.quest-board-column {
+  display: grid;
   gap: 22px;
   align-items: start;
 }
@@ -505,7 +524,7 @@ body.battle-mode .scene-stack {
 }
 
 .two-column-row {
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
 }
 
 .form-field {
@@ -517,7 +536,8 @@ body.battle-mode .scene-stack {
 .form-field textarea,
 .form-field select {
   width: 100%;
-  padding: 14px 16px;
+  box-sizing: border-box;
+  padding: 12px 14px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 16px;
   background: rgba(255, 255, 255, 0.04);
@@ -535,7 +555,7 @@ body.battle-mode .scene-stack {
 
 .form-field textarea {
   resize: vertical;
-  min-height: 110px;
+  min-height: 80px;
 }
 
 .field-label em {
@@ -557,16 +577,16 @@ body.battle-mode .scene-stack {
 .difficulty-toggle {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
+  gap: 6px;
 }
 
 .difficulty-option {
-  padding: 14px 12px;
+  padding: 10px 6px;
   border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 16px;
+  border-radius: 12px;
   background: rgba(255, 255, 255, 0.05);
   color: var(--text-primary);
-  font: 700 1rem "Cinzel", serif;
+  font: 700 0.85rem "Cinzel", serif;
   cursor: pointer;
 }
 
@@ -597,8 +617,70 @@ body.battle-mode .scene-stack {
 }
 
 .active-quest-list,
+.completed-quest-list,
 .progress-history-list {
   margin-top: 20px;
+}
+
+.completed-quest-list {
+  display: grid;
+  gap: 10px;
+  max-height: 340px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.completed-quest-item {
+  display: grid;
+  gap: 6px;
+  padding: 12px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.025);
+  opacity: 0.75;
+}
+
+.completed-quest-item .quest-item-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: start;
+}
+
+.completed-quest-item strong {
+  color: var(--text-primary);
+  font-size: 0.92rem;
+}
+
+.completed-quest-item p {
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  margin: 2px 0 0;
+}
+
+.completed-quest-item .quest-item-meta {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.completed-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 3px 9px;
+  border-radius: 6px;
+  color: var(--green);
+  background: rgba(109, 247, 186, 0.1);
+  border: 1px solid rgba(109, 247, 186, 0.2);
+}
+
+.completed-quests-empty {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  text-align: center;
+  padding: 20px 0;
 }
 
 .quest-list-item,
@@ -1001,65 +1083,6 @@ input[type="range"] {
   animation: floatUp 900ms ease forwards;
 }
 
-.battle-controls {
-  position: absolute;
-  right: 24px;
-  bottom: 78px;
-  z-index: 5;
-  display: flex;
-  justify-content: flex-end;
-  align-items: end;
-  gap: 20px;
-}
-
-.battle-action-panel {
-  min-width: min(420px, 48vw);
-  padding: 18px 20px;
-  border: 2px solid rgba(227, 209, 168, 0.45);
-  border-radius: 18px;
-  background: rgba(18, 24, 58, 0.62);
-  backdrop-filter: blur(6px);
-  box-shadow: 0 18px 30px rgba(0, 0, 0, 0.24);
-  text-align: right;
-}
-
-.battle-action-title {
-  margin: 0;
-  color: #f1c98d;
-  font: 700 0.95rem "Cinzel", serif;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.battle-action-task {
-  margin: 8px 0 14px;
-  color: #f3f4fb;
-  font: 700 1.15rem "Cinzel", serif;
-}
-
-.battle-button-row {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-}
-
-.enemy-debug-button {
-  padding: 16px 24px;
-  border: 3px solid #4a2d2d;
-  border-radius: 8px;
-  background: linear-gradient(180deg, #f1d6d6, #c98a8a);
-  color: #402020;
-  font: 700 1rem "Cinzel", serif;
-}
-
-.end-turn-button {
-  padding: 16px 28px;
-  border: 3px solid #2b3941;
-  border-radius: 8px;
-  background: linear-gradient(180deg, #d6ebef, #bcd6dc);
-  color: #22333c;
-  font: 700 1rem "Cinzel", serif;
-}
 
 .pile {
   position: absolute;
@@ -1123,16 +1146,12 @@ input[type="range"] {
   }
 
   .scene-banner-actions,
-  .form-footer,
-  .battle-button-row {
+  .form-footer {
     flex-direction: column;
     align-items: stretch;
   }
 
-  .start-battle-button,
-  .action-button,
-  .enemy-debug-button,
-  .end-turn-button {
+  .action-button {
     width: 100%;
   }
 }
@@ -1162,17 +1181,6 @@ input[type="range"] {
     padding: 0 18px 260px;
   }
 
-  .battle-controls {
-    right: 18px;
-    left: 18px;
-    bottom: 88px;
-  }
-
-  .battle-action-panel {
-    min-width: 0;
-    width: 100%;
-    text-align: left;
-  }
 
   .battle-stage-frame {
     width: min(200vw, 1260px);
@@ -1217,11 +1225,6 @@ input[type="range"] {
     width: calc(100% - 24px);
   }
 
-  .battle-controls {
-    right: 12px;
-    left: 12px;
-    bottom: 74px;
-  }
 
   .pile {
     bottom: 8px;
@@ -1238,4 +1241,321 @@ input[type="range"] {
   .hero-actor.is-attacking {
     transform: translateX(calc(-50% + var(--hero-attack-x, 180px))) scaleX(1);
   }
+}
+
+/* ── Quest Complete Modal ── */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(6px);
+  animation: modalFadeIn 0.3s ease;
+}
+
+.modal-overlay[hidden] {
+  display: none;
+}
+
+.modal-card {
+  background: linear-gradient(165deg, #0f1a35 0%, #162044 50%, #0f1a35 100%);
+  border: 1px solid var(--gold);
+  border-radius: 16px;
+  padding: 40px 48px;
+  max-width: 440px;
+  width: 90%;
+  text-align: center;
+  box-shadow:
+    0 0 60px rgba(247, 207, 109, 0.2),
+    0 20px 45px rgba(0, 0, 0, 0.5);
+  animation: modalSlideUp 0.4s ease;
+}
+
+.modal-icon {
+  font-size: 3.2rem;
+  line-height: 1;
+  margin-bottom: 8px;
+  filter: drop-shadow(0 0 12px rgba(247, 207, 109, 0.6));
+}
+
+.modal-title {
+  font-family: "Cinzel", serif;
+  font-size: 1.8rem;
+  color: var(--gold);
+  margin: 0 0 6px;
+  text-shadow: 0 0 18px rgba(247, 207, 109, 0.4);
+}
+
+.modal-task-name {
+  font-size: 1.05rem;
+  color: var(--text-muted);
+  margin: 0 0 24px;
+}
+
+.modal-rewards {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.modal-reward-item {
+  background: rgba(247, 207, 109, 0.08);
+  border: 1px solid rgba(247, 207, 109, 0.25);
+  border-radius: 10px;
+  padding: 12px 20px;
+  flex: 1;
+}
+
+.modal-reward-label {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 4px;
+}
+
+.modal-reward-value {
+  display: block;
+  font-family: "Cinzel", serif;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--gold);
+}
+
+.modal-achievements {
+  margin-bottom: 20px;
+  padding: 12px 16px;
+  background: rgba(109, 247, 186, 0.08);
+  border: 1px solid rgba(109, 247, 186, 0.25);
+  border-radius: 10px;
+  text-align: left;
+}
+
+.modal-achievements[hidden] {
+  display: none;
+}
+
+.modal-achievement-title {
+  font-size: 0.78rem;
+  color: var(--green);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin: 0 0 6px;
+}
+
+.modal-achievement-name {
+  display: block;
+  font-size: 1rem;
+  color: var(--text-primary);
+  margin: 4px 0;
+}
+
+.modal-close-btn {
+  margin-top: 8px;
+  min-width: 160px;
+}
+
+.quest-item-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.quest-edit-btn {
+  padding: 5px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-muted);
+  font: 600 0.8rem "Cinzel", serif;
+  cursor: pointer;
+  transition: background 180ms ease, border-color 180ms ease, color 180ms ease;
+}
+
+.quest-edit-btn:hover {
+  background: rgba(247, 207, 109, 0.12);
+  border-color: rgba(247, 207, 109, 0.35);
+  color: var(--gold-soft);
+}
+
+.edit-modal-card {
+  max-width: 520px;
+  text-align: left;
+}
+
+.edit-quest-form {
+  margin-top: 16px;
+}
+
+.edit-modal-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.edit-modal-right-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.delete-quest-btn {
+  background: linear-gradient(180deg, #c94040, #8b2020) !important;
+  color: #fff !important;
+  font-size: 0.85rem !important;
+  padding: 12px 18px !important;
+  box-shadow: 0 6px 16px rgba(180, 40, 40, 0.35) !important;
+}
+
+.delete-quest-btn:hover {
+  filter: brightness(1.15);
+}
+
+.cancel-quest-btn {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: var(--text-muted) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  font-size: 0.85rem !important;
+  padding: 12px 18px !important;
+  box-shadow: none !important;
+}
+
+.cancel-quest-btn:hover {
+  background: rgba(255, 255, 255, 0.14) !important;
+}
+
+.save-quest-btn {
+  font-size: 0.85rem !important;
+  padding: 12px 18px !important;
+}
+
+.achievements-btn {
+  font-size: 0.9rem !important;
+  padding: 12px 22px !important;
+}
+
+.achievements-modal-card {
+  max-width: 580px;
+  text-align: left;
+}
+
+.achievements-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.achievements-modal-header .modal-title {
+  margin: 0;
+}
+
+.achievements-grid {
+  display: grid;
+  gap: 10px;
+  max-height: 60vh;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.achievement-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+  transition: border-color 200ms ease, background 200ms ease;
+}
+
+.achievement-card.is-unlocked {
+  border-color: rgba(247, 207, 109, 0.35);
+  background: rgba(247, 207, 109, 0.06);
+}
+
+.achievement-card.is-locked {
+  opacity: 0.5;
+}
+
+.achievement-icon {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.achievement-card.is-unlocked .achievement-icon {
+  background: rgba(247, 207, 109, 0.15);
+  border: 1px solid rgba(247, 207, 109, 0.3);
+}
+
+.achievement-card.is-locked .achievement-icon {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  filter: grayscale(1);
+}
+
+.achievement-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.achievement-name {
+  font: 700 0.95rem "Cinzel", serif;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.achievement-card.is-unlocked .achievement-name {
+  color: var(--gold-soft);
+}
+
+.achievement-desc {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  margin: 3px 0 0;
+}
+
+.achievement-status {
+  flex-shrink: 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 4px 10px;
+  border-radius: 6px;
+}
+
+.achievement-card.is-unlocked .achievement-status {
+  color: var(--gold);
+  background: rgba(247, 207, 109, 0.12);
+  border: 1px solid rgba(247, 207, 109, 0.25);
+}
+
+.achievement-card.is-locked .achievement-status {
+  color: var(--text-muted);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+@keyframes modalFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes modalSlideUp {
+  from { opacity: 0; transform: translateY(30px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }

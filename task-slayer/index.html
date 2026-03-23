@@ -42,9 +42,7 @@
           </div>
           <div class="scene-banner-actions">
             <span class="scene-chip">Quest Management</span>
-            <button class="action-button start-battle-button" id="start-battle-btn" type="button">
-              Start Battle
-            </button>
+            <button class="action-button achievements-btn" id="achievements-btn" type="button">Achievements</button>
           </div>
         </div>
 
@@ -160,7 +158,7 @@
 
               <label class="form-field">
                 <span class="field-label">Task Description <em>*</em></span>
-                <textarea id="task-description-input" name="taskDescription" rows="5" placeholder="Describe the objective, scope, and expected result." required></textarea>
+                <textarea id="task-description-input" name="taskDescription" rows="3" placeholder="Describe the objective, scope, and expected result." required></textarea>
               </label>
 
               <div class="form-row two-column-row">
@@ -188,17 +186,30 @@
             </form>
           </section>
 
-          <section class="panel active-quests-panel">
-            <div class="section-head">
-              <div>
-                <p class="eyebrow">Quest Board</p>
-                <h3>Active Quests</h3>
+          <div class="quest-board-column">
+            <section class="panel active-quests-panel">
+              <div class="section-head">
+                <div>
+                  <p class="eyebrow">Quest Board</p>
+                  <h3>Active Quests</h3>
+                </div>
+                <span class="scene-chip" id="quest-count-chip">3 Active</span>
               </div>
-              <span class="scene-chip" id="quest-count-chip">3 Active</span>
-            </div>
 
-            <div class="active-quest-list" id="active-task-list" aria-live="polite"></div>
-          </section>
+              <div class="active-quest-list" id="active-task-list" aria-live="polite"></div>
+            </section>
+
+            <section class="panel completed-quests-panel" id="completed-quests-panel">
+              <div class="section-head">
+                <div>
+                  <p class="eyebrow">Quest Archive</p>
+                  <h3>Completed Quests</h3>
+                </div>
+                <span class="scene-chip" id="completed-count-chip">0 Cleared</span>
+              </div>
+              <div class="completed-quest-list" id="completed-task-list"></div>
+            </section>
+          </div>
 
           <section class="panel quest-detail-panel">
             <div class="section-head">
@@ -327,22 +338,81 @@
             </div>
           </div>
 
-          <div class="battle-controls">
-            <div class="battle-action-panel">
-              <p class="battle-action-title">Task Command</p>
-              <p class="battle-action-task" id="battle-task-title">Refactor the Dashboard Header</p>
-              <div class="battle-button-row">
-                <button class="end-turn-button" id="battle-attack-btn" type="button">Battle</button>
-                <button class="enemy-debug-button" id="enemy-debug-btn" type="button">Enemy</button>
-              </div>
-            </div>
-          </div>
 
           <div class="pile pile-left">&#9656; Progress 0</div>
           <div class="pile pile-right">&#9656; Cleared 5</div>
         </div>
       </section>
     </main>
+
+    <div class="modal-overlay" id="achievements-modal" hidden>
+      <div class="modal-card achievements-modal-card">
+        <div class="achievements-modal-header">
+          <h2 class="modal-title">Achievements</h2>
+          <button class="action-button cancel-quest-btn" type="button" id="achievements-close-btn">Close</button>
+        </div>
+        <div class="achievements-grid" id="achievements-grid"></div>
+      </div>
+    </div>
+
+    <div class="modal-overlay" id="edit-quest-modal" hidden>
+      <div class="modal-card edit-modal-card">
+        <h2 class="modal-title">Edit Quest</h2>
+        <form id="edit-task-form" class="quest-form edit-quest-form">
+          <input type="hidden" id="edit-task-id">
+          <label class="form-field">
+            <span class="field-label">Task Name <em>*</em></span>
+            <input id="edit-task-name" type="text" placeholder="Enter a quest title" required>
+          </label>
+          <label class="form-field">
+            <span class="field-label">Task Description <em>*</em></span>
+            <textarea id="edit-task-description" rows="4" placeholder="Describe the objective, scope, and expected result." required></textarea>
+          </label>
+          <div class="form-row two-column-row">
+            <fieldset class="form-field difficulty-fieldset">
+              <legend class="field-label">Difficulty <em>*</em></legend>
+              <div class="difficulty-toggle" id="edit-difficulty-toggle">
+                <button class="difficulty-option easy-option" type="button" data-difficulty="Easy">Easy</button>
+                <button class="difficulty-option medium-option" type="button" data-difficulty="Medium">Medium</button>
+                <button class="difficulty-option hard-option" type="button" data-difficulty="Hard">Hard</button>
+              </div>
+              <input id="edit-task-difficulty" type="hidden" value="Easy">
+            </fieldset>
+            <label class="form-field deadline-field featured-field">
+              <span class="field-label">Deadline <em>*</em></span>
+              <input id="edit-task-deadline" type="date" required>
+            </label>
+          </div>
+          <div class="edit-modal-actions">
+            <button class="action-button delete-quest-btn" type="button" id="edit-delete-btn">Delete Quest</button>
+            <div class="edit-modal-right-actions">
+              <button class="action-button cancel-quest-btn" type="button" id="edit-cancel-btn">Cancel</button>
+              <button class="action-button save-quest-btn" type="submit">Save Changes</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="modal-overlay" id="quest-complete-modal" hidden>
+      <div class="modal-card">
+        <div class="modal-icon">&#9876;</div>
+        <h2 class="modal-title">Quest Complete!</h2>
+        <p class="modal-task-name" id="modal-task-name"></p>
+        <div class="modal-rewards">
+          <div class="modal-reward-item">
+            <span class="modal-reward-label">Bonus XP</span>
+            <span class="modal-reward-value" id="modal-bonus-xp">+100</span>
+          </div>
+          <div class="modal-reward-item">
+            <span class="modal-reward-label">Total XP Earned</span>
+            <span class="modal-reward-value" id="modal-total-xp"></span>
+          </div>
+        </div>
+        <div class="modal-achievements" id="modal-achievements" hidden></div>
+        <button class="action-button modal-close-btn" id="modal-close-btn" type="button">Continue</button>
+      </div>
+    </div>
   </div>
 
   <script src="./js/battle.js"></script>
