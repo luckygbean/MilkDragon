@@ -1435,6 +1435,229 @@ input[type="range"] {
   padding: 12px 18px !important;
 }
 
+.completed-section-head {
+  align-items: center;
+}
+
+.completed-section-head .completed-head-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.archive-detail-btn {
+  font-size: 0.78rem !important;
+  padding: 8px 14px !important;
+  letter-spacing: 0.04em !important;
+  border-radius: 12px !important;
+  white-space: nowrap;
+}
+
+.quest-archive-modal-card {
+  max-width: min(820px, 94vw);
+  width: 100%;
+  max-height: min(82vh, 720px);
+  text-align: left;
+  padding: 28px 28px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  overflow: hidden;
+}
+
+.quest-archive-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+.quest-archive-header .modal-title {
+  margin: 0 0 4px;
+  font-size: 1.45rem;
+}
+
+.quest-archive-subtitle {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+  max-width: 420px;
+}
+
+.quest-archive-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  flex-shrink: 0;
+}
+
+.archive-search-block {
+  display: grid;
+  gap: 6px;
+}
+
+.archive-search-hint {
+  margin: 0;
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.archive-filters-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  align-items: stretch;
+}
+
+@media (max-width: 640px) {
+  .archive-filters-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.archive-filter-legend {
+  margin: 0;
+  font-size: 0.74rem;
+  color: var(--text-muted);
+  line-height: 1.45;
+  letter-spacing: 0.02em;
+}
+
+.archive-field {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.archive-field-label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+}
+
+.archive-input,
+.archive-select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-primary);
+  font: 600 0.92rem "Rajdhani", sans-serif;
+  outline: none;
+}
+
+.archive-input:focus,
+.archive-select:focus {
+  border-color: rgba(247, 207, 109, 0.48);
+  box-shadow: 0 0 0 3px rgba(247, 207, 109, 0.12);
+}
+
+.archive-select optgroup {
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 700;
+  font-size: 0.82rem;
+  color: var(--gold-soft);
+  background: #111a32;
+}
+
+.quest-archive-summary {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.quest-archive-list-wrap {
+  flex: 1;
+  min-height: 0;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  background: rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+}
+
+.quest-archive-list {
+  max-height: min(48vh, 420px);
+  overflow-y: auto;
+  padding: 12px;
+  display: grid;
+  gap: 10px;
+}
+
+.quest-archive-row {
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.quest-archive-row-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.quest-archive-row-title {
+  margin: 0;
+  font: 700 1rem "Cinzel", serif;
+  color: var(--text-primary);
+  letter-spacing: 0.03em;
+}
+
+.quest-archive-row-desc {
+  margin: 8px 0 0;
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  line-height: 1.45;
+}
+
+.quest-archive-row-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+  align-items: center;
+}
+
+.quest-archive-meta-pill {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 4px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-muted);
+}
+
+.quest-archive-meta-pill.is-monster {
+  color: #d3e5ff;
+  border-color: rgba(114, 187, 255, 0.28);
+  background: rgba(114, 187, 255, 0.1);
+}
+
+.quest-archive-meta-pill.is-completed {
+  color: var(--green);
+  border-color: rgba(109, 247, 186, 0.25);
+  background: rgba(109, 247, 186, 0.08);
+}
+
+.quest-archive-empty {
+  margin: 0;
+  padding: 28px 16px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
 .achievements-btn {
   font-size: 0.9rem !important;
   padding: 12px 22px !important;

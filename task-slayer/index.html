@@ -200,12 +200,15 @@
             </section>
 
             <section class="panel completed-quests-panel" id="completed-quests-panel">
-              <div class="section-head">
+              <div class="section-head completed-section-head">
                 <div>
                   <p class="eyebrow">Quest Archive</p>
                   <h3>Completed Quests</h3>
                 </div>
-                <span class="scene-chip" id="completed-count-chip">0 Cleared</span>
+                <div class="completed-head-actions">
+                  <span class="scene-chip" id="completed-count-chip">0 Cleared</span>
+                  <button class="action-button archive-detail-btn" type="button" id="archive-detail-btn">Details</button>
+                </div>
               </div>
               <div class="completed-quest-list" id="completed-task-list"></div>
             </section>
@@ -391,6 +394,85 @@
             </div>
           </div>
         </form>
+      </div>
+    </div>
+
+    <div class="modal-overlay" id="quest-archive-modal" hidden>
+      <div class="modal-card quest-archive-modal-card" role="dialog" aria-labelledby="quest-archive-title" aria-modal="true">
+        <div class="quest-archive-header">
+          <div>
+            <h2 class="modal-title" id="quest-archive-title">Quest Archive</h2>
+            <p class="quest-archive-subtitle">Browse cleared quests: partial search, filters, and sorting.</p>
+          </div>
+          <button class="action-button cancel-quest-btn" type="button" id="quest-archive-close-btn">Close</button>
+        </div>
+
+        <div class="quest-archive-controls">
+          <div class="archive-search-block">
+            <label class="archive-field archive-search-field">
+              <span class="archive-field-label">Search</span>
+              <input type="search" id="archive-search-input" class="archive-input" placeholder="Any word or fragment…" autocomplete="off">
+            </label>
+            <p class="archive-search-hint">Partial match: each word can appear anywhere in the title, description, notes, difficulty, or monster — not an exact full-title match.</p>
+          </div>
+
+          <div class="archive-filters-row" role="group" aria-label="Archive filters">
+            <label class="archive-field">
+              <span class="archive-field-label">Sort by</span>
+              <select id="archive-sort-select" class="archive-select">
+                <optgroup label="When cleared">
+                  <option value="completed-desc">Cleared: newest first</option>
+                  <option value="completed-asc">Cleared: oldest first</option>
+                </optgroup>
+                <optgroup label="When quest was created">
+                  <option value="created-desc">Created: newest first</option>
+                  <option value="created-asc">Created: oldest first</option>
+                </optgroup>
+                <optgroup label="Deadline date">
+                  <option value="deadline-asc">Deadline: soonest first</option>
+                  <option value="deadline-desc">Deadline: latest first</option>
+                </optgroup>
+                <optgroup label="Difficulty">
+                  <option value="difficulty-asc">Difficulty: Easy → Medium → Hard</option>
+                  <option value="difficulty-desc">Difficulty: Hard → Medium → Easy</option>
+                </optgroup>
+                <optgroup label="Alphabet (quest name)">
+                  <option value="name-asc">Name: A to Z</option>
+                  <option value="name-desc">Name: Z to A</option>
+                </optgroup>
+              </select>
+            </label>
+            <label class="archive-field">
+              <span class="archive-field-label">Difficulty</span>
+              <select id="archive-filter-difficulty" class="archive-select">
+                <option value="all">No tier filter (show all)</option>
+                <optgroup label="Quest tier — pick one">
+                  <option value="Easy">Easy — Scout quest</option>
+                  <option value="Medium">Medium — Champion quest</option>
+                  <option value="Hard">Hard — Elite task</option>
+                </optgroup>
+              </select>
+            </label>
+            <label class="archive-field">
+              <span class="archive-field-label">Monster</span>
+              <select id="archive-filter-monster" class="archive-select">
+                <option value="all">No foe filter (show all)</option>
+                <optgroup label="Foe type — pick one">
+                  <option value="skeleton">Skeleton</option>
+                  <option value="flying-eye">Flying Eye</option>
+                  <option value="goblin">Goblin</option>
+                </optgroup>
+              </select>
+            </label>
+          </div>
+          <p class="archive-filter-legend">Available tiers: Easy, Medium, Hard. Available foes: Skeleton, Flying Eye, Goblin. Open each menu to filter by one choice.</p>
+        </div>
+
+        <p class="quest-archive-summary" id="quest-archive-summary" aria-live="polite"></p>
+
+        <div class="quest-archive-list-wrap">
+          <div class="quest-archive-list" id="quest-archive-list"></div>
+        </div>
       </div>
     </div>
 

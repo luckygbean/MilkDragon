@@ -25,6 +25,7 @@ def format_task(task_row, updates=None, monster=None):
         "latestNote": task["latest_note"],
         "isCompleted": bool(task["is_completed"]),
         "createdAt": task["created_at"],
+        "completedAt": task["completed_at"],
         "updates": [],
     }
 

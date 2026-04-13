@@ -219,6 +219,17 @@ const achievementsBtn = document.getElementById("achievements-btn");
 const achievementsModal = document.getElementById("achievements-modal");
 const achievementsGrid = document.getElementById("achievements-grid");
 const achievementsCloseBtn = document.getElementById("achievements-close-btn");
+const archiveDetailBtn = document.getElementById("archive-detail-btn");
+const questArchiveModal = document.getElementById("quest-archive-modal");
+const questArchiveCloseBtn = document.getElementById("quest-archive-close-btn");
+const archiveSearchInput = document.getElementById("archive-search-input");
+const archiveSortSelect = document.getElementById("archive-sort-select");
+const archiveFilterDifficulty = document.getElementById("archive-filter-difficulty");
+const archiveFilterMonster = document.getElementById("archive-filter-monster");
+const questArchiveList = document.getElementById("quest-archive-list");
+const questArchiveSummary = document.getElementById("quest-archive-summary");
+
+const DIFFICULTY_RANK = { Easy: 1, Medium: 2, Hard: 3 };
 
 const ACHIEVEMENT_ICONS = {
   sword: "\u2694\uFE0F",
@@ -285,6 +296,226 @@ function getDifficultyLabel(difficulty) {
 
 function getDifficultyClass(difficulty) {
   return difficulty.toLowerCase();
+}
+
+function parseTaskTimestamp(value) {
+  if (value == null || value === "") return null;
+  const s = String(value).trim();
+  if (!s) return null;
+  const normalized = s.includes("T") ? s : s.replace(" ", "T");
+  const time = Date.parse(normalized);
+  return Number.isNaN(time) ? null : time;
+}
+
+function getCompletionSortKey(task) {
+  return (
+    parseTaskTimestamp(task.completedAt)
+    ?? parseTaskTimestamp(task.createdAt)
+    ?? 0
+  );
+}
+
+function getCreatedSortKey(task) {
+  return parseTaskTimestamp(task.createdAt) ?? 0;
+}
+
+function parseDeadlineSortKey(task) {
+  if (!task.deadline) return 0;
+  return parseTaskTimestamp(`${task.deadline}T12:00:00`) ?? 0;
+}
+
+function formatArchiveCompletedAt(task) {
+  const t =
+    parseTaskTimestamp(task.completedAt)
+    ?? parseTaskTimestamp(task.createdAt);
+  if (t === null) return "—";
+  return new Date(t).toLocaleString(undefined, {
+    dateStyle: "medium",
+    timeStyle: "short",
+  });
+}
+
+function taskArchiveSearchBlob(task) {
+  const diffLabel = getDifficultyLabel(task.difficulty);
+  return [
+    task.name,
+    task.description,
+    task.monsterName,
+    task.latestNote,
+    task.difficulty,
+    diffLabel,
+    task.monsterId,
+  ]
+    .filter((x) => x != null && String(x).trim() !== "")
+    .join(" ")
+    .toLowerCase();
+}
+
+function archiveSearchMatchesTask(task, rawQuery) {
+  const trimmed = (rawQuery || "").trim().toLowerCase();
+  if (!trimmed) return true;
+  const tokens = trimmed.split(/\s+/).filter(Boolean);
+  if (tokens.length === 0) return true;
+  const blob = taskArchiveSearchBlob(task);
+  return tokens.every((tok) => blob.includes(tok));
+}
+
+function getArchiveViewTasks() {
+  const rawQ = archiveSearchInput?.value || "";
+  const diff = archiveFilterDifficulty?.value || "all";
+  const monster = archiveFilterMonster?.value || "all";
+  const sort = archiveSortSelect?.value || "completed-desc";
+
+  let list = completedTasks.filter((t) => t.isCompleted);
+  if (diff !== "all") {
+    list = list.filter((t) => t.difficulty === diff);
+  }
+  if (monster !== "all") {
+    list = list.filter((t) => String(t.monsterId) === monster);
+  }
+  list = list.filter((t) => archiveSearchMatchesTask(t, rawQ));
+
+  const sorted = [...list];
+  const rank = (d) => DIFFICULTY_RANK[d] ?? 99;
+
+  switch (sort) {
+    case "completed-desc":
+      sorted.sort((a, b) => getCompletionSortKey(b) - getCompletionSortKey(a));
+      break;
+    case "completed-asc":
+      sorted.sort((a, b) => getCompletionSortKey(a) - getCompletionSortKey(b));
+      break;
+    case "created-desc":
+      sorted.sort((a, b) => getCreatedSortKey(b) - getCreatedSortKey(a));
+      break;
+    case "created-asc":
+      sorted.sort((a, b) => getCreatedSortKey(a) - getCreatedSortKey(b));
+      break;
+    case "deadline-asc":
+      sorted.sort((a, b) => parseDeadlineSortKey(a) - parseDeadlineSortKey(b));
+      break;
+    case "deadline-desc":
+      sorted.sort((a, b) => parseDeadlineSortKey(b) - parseDeadlineSortKey(a));
+      break;
+    case "difficulty-asc":
+      sorted.sort((a, b) => rank(a.difficulty) - rank(b.difficulty) || a.name.localeCompare(b.name));
+      break;
+    case "difficulty-desc":
+      sorted.sort((a, b) => rank(b.difficulty) - rank(a.difficulty) || a.name.localeCompare(b.name));
+      break;
+    case "name-asc":
+      sorted.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: "base" }));
+      break;
+    case "name-desc":
+      sorted.sort((a, b) => b.name.localeCompare(a.name, undefined, { sensitivity: "base" }));
+      break;
+    default:
+      break;
+  }
+
+  return sorted;
+}
+
+function renderQuestArchiveModal() {
+  if (!questArchiveList || !questArchiveSummary) return;
+
+  const totalCleared = completedTasks.filter((t) => t.isCompleted).length;
+  const rows = getArchiveViewTasks();
+
+  if (totalCleared === 0) {
+    questArchiveSummary.textContent = "No completed quests yet.";
+  } else if (rows.length === 0) {
+    questArchiveSummary.textContent = `No quests match your search or filters (${totalCleared} cleared total).`;
+  } else {
+    questArchiveSummary.textContent =
+      `Showing ${rows.length} of ${totalCleared} cleared quest${totalCleared === 1 ? "" : "s"}.`;
+  }
+
+  questArchiveList.innerHTML = "";
+
+  if (totalCleared === 0) {
+    const empty = document.createElement("p");
+    empty.className = "quest-archive-empty";
+    empty.textContent = "Clear your first quest to build your archive.";
+    questArchiveList.appendChild(empty);
+    return;
+  }
+
+  if (rows.length === 0) {
+    const empty = document.createElement("p");
+    empty.className = "quest-archive-empty";
+    empty.textContent = "Try a different keyword, difficulty, or monster filter.";
+    questArchiveList.appendChild(empty);
+    return;
+  }
+
+  rows.forEach((task) => {
+    const article = document.createElement("article");
+    article.className = "quest-archive-row";
+
+    const header = document.createElement("div");
+    header.className = "quest-archive-row-header";
+
+    const title = document.createElement("h4");
+    title.className = "quest-archive-row-title";
+    title.textContent = task.name;
+
+    const deadlineBadge = document.createElement("span");
+    deadlineBadge.className = "quest-deadline-badge";
+    deadlineBadge.textContent = formatDate(task.deadline);
+
+    header.append(title, deadlineBadge);
+
+    const desc = document.createElement("p");
+    desc.className = "quest-archive-row-desc";
+    desc.textContent = task.description;
+
+    const meta = document.createElement("div");
+    meta.className = "quest-archive-row-meta";
+
+    const diffPill = document.createElement("span");
+    diffPill.className = `quest-pill ${getDifficultyClass(task.difficulty)}`;
+    diffPill.textContent = task.difficulty;
+
+    const rankPill = document.createElement("span");
+    rankPill.className = "quest-archive-meta-pill";
+    rankPill.textContent = getDifficultyLabel(task.difficulty);
+
+    const monsterPill = document.createElement("span");
+    monsterPill.className = "quest-archive-meta-pill is-monster";
+    monsterPill.textContent = task.monsterName || "Unknown foe";
+
+    const clearedPill = document.createElement("span");
+    clearedPill.className = "quest-archive-meta-pill is-completed";
+    clearedPill.textContent = `Cleared ${formatArchiveCompletedAt(task)}`;
+
+    meta.append(diffPill, rankPill, monsterPill, clearedPill);
+    article.append(header, desc, meta);
+    questArchiveList.appendChild(article);
+  });
+}
+
+function closeQuestArchiveModal() {
+  if (questArchiveModal) questArchiveModal.hidden = true;
+}
+
+async function openQuestArchiveModal() {
+  try {
+    const data = await api("/tasks?include_completed=true");
+    completedTasks = data.tasks.filter((t) => t.isCompleted);
+    renderCompletedTasks();
+  } catch (err) {
+    addLogEntry(combatLog, `Could not refresh archive: ${err.message}`);
+  }
+
+  if (archiveSearchInput) archiveSearchInput.value = "";
+  if (archiveSortSelect) archiveSortSelect.value = "completed-desc";
+  if (archiveFilterDifficulty) archiveFilterDifficulty.value = "all";
+  if (archiveFilterMonster) archiveFilterMonster.value = "all";
+
+  renderQuestArchiveModal();
+  if (questArchiveModal) questArchiveModal.hidden = false;
+  archiveSearchInput?.focus();
 }
 
 function restartGif(media, src) {
@@ -1066,6 +1297,28 @@ editCancelBtn.addEventListener("click", closeEditModal);
 editDeleteBtn.addEventListener("click", handleEditDelete);
 achievementsBtn.addEventListener("click", openAchievementsModal);
 achievementsCloseBtn.addEventListener("click", () => { achievementsModal.hidden = true; });
+archiveDetailBtn?.addEventListener("click", openQuestArchiveModal);
+questArchiveCloseBtn?.addEventListener("click", closeQuestArchiveModal);
+questArchiveModal?.addEventListener("click", (e) => {
+  if (e.target === questArchiveModal) closeQuestArchiveModal();
+});
+archiveSearchInput?.addEventListener("input", () => {
+  if (!questArchiveModal?.hidden) renderQuestArchiveModal();
+});
+archiveSortSelect?.addEventListener("change", () => {
+  if (!questArchiveModal?.hidden) renderQuestArchiveModal();
+});
+archiveFilterDifficulty?.addEventListener("change", () => {
+  if (!questArchiveModal?.hidden) renderQuestArchiveModal();
+});
+archiveFilterMonster?.addEventListener("change", () => {
+  if (!questArchiveModal?.hidden) renderQuestArchiveModal();
+});
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && questArchiveModal && !questArchiveModal.hidden) {
+    closeQuestArchiveModal();
+  }
+});
 window.addEventListener("resize", () => {
   updateHeroAttackOffset();
   updateMonsterAttackOffset();
