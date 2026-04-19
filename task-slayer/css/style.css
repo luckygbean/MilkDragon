@@ -1261,6 +1261,14 @@ input[type="range"] {
   display: none;
 }
 
+/* Quest Archive: tall card + filters — allow overlay scroll on short viewports */
+#quest-archive-modal.modal-overlay {
+  align-items: flex-start;
+  padding: max(16px, env(safe-area-inset-top, 0px)) 14px max(24px, env(safe-area-inset-bottom, 0px));
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
 .modal-card {
   background: linear-gradient(165deg, #0f1a35 0%, #162044 50%, #0f1a35 100%);
   border: 1px solid var(--gold);
@@ -1580,14 +1588,24 @@ input[type="range"] {
   border-radius: 16px;
   background: rgba(0, 0, 0, 0.2);
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .quest-archive-list {
-  max-height: min(48vh, 420px);
+  flex: 1;
+  min-height: 0;
   overflow-y: auto;
   padding: 12px;
   display: grid;
   gap: 10px;
+  align-content: start;
+}
+
+/* Empty state: keep message centered in the scroll panel */
+.quest-archive-list:has(> .quest-archive-empty:only-child) {
+  place-items: center;
+  align-content: center;
 }
 
 .quest-archive-row {
