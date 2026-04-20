@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, session
 from models.task import (
     get_tasks,
     get_task,
@@ -14,8 +14,13 @@ tasks_bp = Blueprint("tasks", __name__)
 
 @tasks_bp.route("/tasks", methods=["GET"])
 def list_tasks():
+    user_id = session.get("user_id")
+    if not user_id:
+        return jsonify({"error": "请先登录"}), 401
+
     include_completed = request.args.get("include_completed", "false").lower() == "true"
-    tasks = get_tasks(user_id=1, include_completed=include_completed)
+    tasks = get_tasks(user_id=user_id, include_completed=include_completed)
+
     return jsonify({"tasks": tasks})
 
 

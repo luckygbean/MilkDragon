@@ -1,3 +1,10 @@
+CREATE TABLE IF NOT EXISTS users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username TEXT UNIQUE NOT NULL,
+    password_hash TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+
 CREATE TABLE IF NOT EXISTS monsters (
     id          TEXT PRIMARY KEY,
     name        TEXT NOT NULL,
@@ -9,7 +16,7 @@ CREATE TABLE IF NOT EXISTS monsters (
 
 CREATE TABLE IF NOT EXISTS tasks (
     id           INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id      INTEGER NOT NULL DEFAULT 1,
+    user_id      INTEGER NOT NULL,
     name         TEXT NOT NULL,
     description  TEXT NOT NULL,
     difficulty   TEXT NOT NULL CHECK (difficulty IN ('Easy', 'Medium', 'Hard')),
@@ -26,7 +33,7 @@ CREATE TABLE IF NOT EXISTS tasks (
 CREATE TABLE IF NOT EXISTS task_updates (
     id         INTEGER PRIMARY KEY AUTOINCREMENT,
     task_id    INTEGER NOT NULL,
-    user_id    INTEGER NOT NULL DEFAULT 1,
+    user_id    INTEGER NOT NULL,
     date       TEXT NOT NULL,
     percent    INTEGER NOT NULL CHECK (percent >= 0 AND percent <= 100),
     note       TEXT NOT NULL,
@@ -35,7 +42,7 @@ CREATE TABLE IF NOT EXISTS task_updates (
 );
 
 CREATE TABLE IF NOT EXISTS player_stats (
-    user_id                INTEGER PRIMARY KEY DEFAULT 1,
+    user_id                INTEGER NOT NULL,
     hero_level             INTEGER NOT NULL DEFAULT 1,
     current_xp             INTEGER NOT NULL DEFAULT 0,
     xp_to_level            INTEGER NOT NULL DEFAULT 100,
@@ -56,7 +63,7 @@ CREATE TABLE IF NOT EXISTS achievements (
 );
 
 CREATE TABLE IF NOT EXISTS player_achievements (
-    user_id        INTEGER NOT NULL DEFAULT 1,
+    user_id        INTEGER NOT NULL,
     achievement_id TEXT NOT NULL,
     unlocked_at    TEXT NOT NULL DEFAULT (datetime('now')),
     PRIMARY KEY (user_id, achievement_id),

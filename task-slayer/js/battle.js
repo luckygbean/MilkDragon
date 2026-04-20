@@ -3,9 +3,14 @@ const API_BASE = "http://127.0.0.1:5000/api";
 async function api(path, options = {}) {
   const res = await fetch(`${API_BASE}${path}`, {
     headers: { "Content-Type": "application/json" },
+    credentials: "include",
     ...options,
   });
   if (!res.ok) {
+    if (res.status === 401 && !path.startsWith("/auth")) {
+      const authModal = document.getElementById("auth-modal");
+      if (authModal) authModal.style.display = "flex";
+    }
     const err = await res.json().catch(() => ({ error: "Request failed" }));
     throw new Error(err.error || `API error: ${res.status}`);
   }
@@ -228,6 +233,80 @@ const archiveFilterDifficulty = document.getElementById("archive-filter-difficul
 const archiveFilterMonster = document.getElementById("archive-filter-monster");
 const questArchiveList = document.getElementById("quest-archive-list");
 const questArchiveSummary = document.getElementById("quest-archive-summary");
+
+// ==========================================
+// 🛡️ 认证模块 (登录 & 注册)
+// ==========================================
+const authModal = document.getElementById("auth-modal");
+const authForm = document.getElementById("auth-form");
+const authUsername = document.getElementById("auth-username");
+const authPassword = document.getElementById("auth-password");
+const authErrorMsg = document.getElementById("auth-error-msg");
+const tabLogin = document.getElementById("tab-login");
+const tabRegister = document.getElementById("tab-register");
+const authSubmitBtn = document.getElementById("auth-submit-btn");
+const authTitle = document.getElementById("auth-title");
+
+let isLoginMode = true; // true: 登录模式, false: 注册模式
+
+// 切换到登录标签
+tabLogin?.addEventListener("click", () => {
+  isLoginMode = true;
+  tabLogin.classList.add("is-active");
+  tabLogin.classList.remove("cancel-quest-btn");
+  tabRegister.classList.remove("is-active");
+  tabRegister.classList.add("cancel-quest-btn");
+  authSubmitBtn.textContent = "Login to Start";
+  authTitle.textContent = "Enter the Dungeon";
+  authErrorMsg.style.display = "none";
+});
+
+// 切换到注册标签
+tabRegister?.addEventListener("click", () => {
+  isLoginMode = false;
+  tabRegister.classList.add("is-active");
+  tabRegister.classList.remove("cancel-quest-btn");
+  tabLogin.classList.remove("is-active");
+  tabLogin.classList.add("cancel-quest-btn");
+  authSubmitBtn.textContent = "Create Hero";
+  authTitle.textContent = "Enlist a New Hero";
+  authErrorMsg.style.display = "none";
+});
+
+// 提交表单
+authForm?.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  authErrorMsg.style.display = "none";
+
+  const username = authUsername.value.trim();
+  const password = authPassword.value;
+  const endpoint = isLoginMode ? "/auth/login" : "/auth/register";
+
+  try {
+    // 独立调用 fetch，避免触发上面的 401 拦截死循环
+    const res = await fetch(`${API_BASE}${endpoint}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include", // 接收并保存后端发来的 Cookie
+      body: JSON.stringify({ username, password })
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(data.error || "Authentication failed");
+    }
+
+    // ✅ 登录/注册成功！隐藏弹窗，重新加载游戏数据
+    authModal.style.display = "none";
+    authForm.reset();
+    initApp();
+
+  } catch (err) {
+    authErrorMsg.textContent = err.message;
+    authErrorMsg.style.display = "block";
+  }
+});
 
 const DIFFICULTY_RANK = { Easy: 1, Medium: 2, Hard: 3 };
 
@@ -1367,6 +1446,51 @@ async function initApp() {
   renderInfoDashboard();
 }
 
-initApp();
+async function initApp() {
+  setupAssetFrames();
+  selectDifficulty(taskDifficultyInput.value);
+
+  try {
+    const [taskData, completedData, statsData] = await Promise.all([
+      api("/tasks"),
+      api("/tasks?include_completed=true"),
+      api("/player/stats"),
+    ]);
+
+    // 🎊 如果成功拿到数据，说明已登录，隐藏拦截弹窗
+    if (authModal) authModal.style.display = "none";
+
+    tasks = taskData.tasks;
+    completedTasks = completedData.tasks.filter((t) => t.isCompleted);
+
+    Object.assign(battleState, {
+      heroLevel: statsData.heroLevel,
+      currentXp: statsData.currentXp,
+      xpToLevel: statsData.xpToLevel,
+      heroHp: statsData.heroHp,
+      heroMaxHp: statsData.heroMaxHp,
+    });
+
+    if (tasks.length > 0) {
+      selectedTaskId = tasks[0].id;
+      const firstTask = tasks[0];
+      const cat = monsterCatalog.find((m) => m.id === firstTask.monsterId);
+      if (cat) {
+        cat.maxHp = firstTask.monsterMaxHp;
+        cat.power = String(firstTask.monsterPower);
+      }
+    }
+  } catch (err) {
+    // 此时大概率是因为 401 未登录被拦截，页面会保持显示登录弹窗
+    addLogEntry(combatLog, `Waiting for hero authentication... (${err.message})`);
+  }
+
+  applyCurrentMonsterVisuals();
+  updateHeroAttackOffset();
+  updateMonsterAttackOffset();
+  setBattleHeroState("idle");
+  setBattleMonsterState("idle");
+  renderInfoDashboard();
+}
 
 

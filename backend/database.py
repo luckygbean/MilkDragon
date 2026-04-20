@@ -62,10 +62,5 @@ def init_db(app):
             )
             db.commit()
 
-        # Ensure default player_stats row exists
-        exists = db.execute("SELECT 1 FROM player_stats WHERE user_id = 1").fetchone()
-        if not exists:
-            db.execute("INSERT INTO player_stats (user_id) VALUES (1)")
-            db.commit()
 
         db.close()

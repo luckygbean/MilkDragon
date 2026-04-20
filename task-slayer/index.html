@@ -11,6 +11,32 @@
 </head>
 <body>
   <div class="page-shell">
+    <div class="modal-overlay" id="auth-modal" style="z-index: 9999;">
+      <div class="modal-card edit-modal-card">
+        <h2 class="modal-title" id="auth-title">Enter the Dungeon</h2>
+        <div style="margin-bottom: 20px; display: flex; gap: 10px;">
+          <button class="action-button is-active" id="tab-login" type="button" style="flex: 1;">Login</button>
+          <button class="action-button cancel-quest-btn" id="tab-register" type="button" style="flex: 1;">Register</button>
+        </div>
+
+        <form id="auth-form" class="quest-form">
+          <label class="form-field">
+            <span class="field-label">Hero Name <em>*</em></span>
+            <input id="auth-username" type="text" placeholder="Enter your username" required autocomplete="off">
+          </label>
+          <label class="form-field">
+            <span class="field-label">Secret Password <em>*</em></span>
+            <input id="auth-password" type="password" placeholder="Enter your password" required>
+          </label>
+
+          <p id="auth-error-msg" style="color: #ff4d4f; font-size: 14px; margin-top: 10px; display: none;">Error message here</p>
+
+          <div class="form-footer" style="margin-top: 24px;">
+            <button class="action-button save-quest-btn" type="submit" id="auth-submit-btn" style="width: 100%;">Login to Start</button>
+          </div>
+        </form>
+      </div>
+    </div>
     <header class="top-bar panel">
       <div>
         <p class="eyebrow">Dungeon Task Board</p>
