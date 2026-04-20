@@ -5,6 +5,10 @@ BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 DATABASE = os.path.join(BASE_DIR, "task_slayer.db")
 SECRET_KEY = "dev-secret-key-change-in-production"
 
+SESSION_COOKIE_SAMESITE = "Lax"
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SECURE = False
+
 # XP awarded per battle hit by difficulty
 XP_PER_HIT = {
     "Easy": 25,

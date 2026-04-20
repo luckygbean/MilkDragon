@@ -111,10 +111,26 @@ body.battle-mode .page-shell {
 
 .top-bar {
   display: grid;
-  grid-template-columns: 1.2fr 180px 1fr;
+  grid-template-columns: 1.2fr 180px 1fr auto;
   gap: 18px;
   align-items: center;
   padding: 22px 26px;
+}
+
+.header-auth {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.header-username {
+  font-size: 0.9rem;
+  color: var(--gold-soft);
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 140px;
 }
 
 body.battle-mode .top-bar {
