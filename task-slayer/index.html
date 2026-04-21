@@ -18,32 +18,75 @@
     </div>
 
     <div class="modal-overlay" id="auth-modal" style="z-index: 9999; display: none;">
-      <div class="modal-card edit-modal-card">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-          <h2 class="modal-title" id="auth-title" style="margin: 0;">Enter the Dungeon</h2>
-          <button id="auth-modal-close" type="button" aria-label="Close" style="background: transparent; border: none; color: rgba(255,255,255,0.6); font-size: 1.5rem; line-height: 1; cursor: pointer; padding: 0 4px;">&times;</button>
-        </div>
-        <div style="margin-bottom: 20px; display: flex; gap: 10px;">
-          <button class="action-button is-active" id="tab-login" type="button" style="flex: 1;">Login</button>
-          <button class="action-button cancel-quest-btn" id="tab-register" type="button" style="flex: 1;">Register</button>
-        </div>
+      <div class="auth-shell" id="auth-shell">
+        <button class="auth-close" id="auth-modal-close" type="button" aria-label="Close">&times;</button>
 
-        <form id="auth-form" class="quest-form">
-          <label class="form-field">
-            <span class="field-label">Hero Name <em>*</em></span>
-            <input id="auth-username" type="text" placeholder="Enter your username" required autocomplete="off">
-          </label>
-          <label class="form-field">
-            <span class="field-label">Secret Password <em>*</em></span>
-            <input id="auth-password" type="password" placeholder="Enter your password" required>
-          </label>
+        <div class="auth-panel auth-panel-form auth-panel-login">
+          <div class="auth-panel-inner">
+            <p class="auth-kicker">Task Slayer Access</p>
+            <h2 class="modal-title auth-title-static">Enter the Dungeon</h2>
+            <p class="auth-copy">Log in with your current hero account to continue your quest.</p>
 
-          <p id="auth-error-msg" style="color: #ff4d4f; font-size: 14px; margin-top: 10px; display: none;">Error message here</p>
+            <form id="auth-form" class="quest-form auth-form">
+              <label class="form-field">
+                <span class="field-label">Hero Name <em>*</em></span>
+                <input id="auth-username" type="text" placeholder="Enter your username" required autocomplete="off">
+              </label>
+              <label class="form-field">
+                <span class="field-label">Secret Password <em>*</em></span>
+                <input id="auth-password" type="password" placeholder="Enter your password" required>
+              </label>
 
-          <div class="form-footer" style="margin-top: 24px;">
-            <button class="action-button save-quest-btn" type="submit" id="auth-submit-btn" style="width: 100%;">Login to Start</button>
+              <p id="auth-error-msg" class="auth-error-msg">Error message here</p>
+
+              <div class="form-footer auth-form-footer">
+                <button class="action-button save-quest-btn auth-submit-btn" type="submit" id="auth-submit-btn">Login to Start</button>
+              </div>
+            </form>
           </div>
-        </form>
+        </div>
+
+        <div class="auth-panel auth-panel-form auth-panel-register" aria-hidden="true">
+          <div class="auth-panel-inner">
+            <p class="auth-kicker">New Adventurer</p>
+            <h2 class="modal-title auth-title-static">Enlist a New Hero</h2>
+            <p class="auth-copy">Register a fresh hero profile and start carving through your task list.</p>
+
+            <form id="auth-register-form" class="quest-form auth-form">
+              <label class="form-field">
+                <span class="field-label">Hero Name <em>*</em></span>
+                <input id="auth-register-username" type="text" placeholder="Choose your username" required autocomplete="off">
+              </label>
+              <label class="form-field">
+                <span class="field-label">Secret Password <em>*</em></span>
+                <input id="auth-register-password" type="password" placeholder="Create your password" required>
+              </label>
+
+              <p id="auth-register-error-msg" class="auth-error-msg">Error message here</p>
+
+              <div class="form-footer auth-form-footer">
+                <button class="action-button save-quest-btn auth-submit-btn" type="submit" id="auth-register-submit-btn">Create Hero</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <div class="auth-overlay-container" aria-hidden="true">
+          <div class="auth-overlay">
+            <div class="auth-overlay-panel auth-overlay-left">
+              <p class="auth-kicker">Welcome Back</p>
+              <h2 class="auth-overlay-title">Already have a hero?</h2>
+              <p class="auth-overlay-copy">Use your existing Login to get back into the dungeon.</p>
+              <button class="action-button cancel-quest-btn auth-toggle-btn" id="tab-login" type="button">Login</button>
+            </div>
+            <div class="auth-overlay-panel auth-overlay-right">
+              <p class="auth-kicker">First Journey</p>
+              <h2 class="auth-overlay-title">Need a new hero?</h2>
+              <p class="auth-overlay-copy">Register once, then keep using the same Login details as your adventure continues.</p>
+              <button class="action-button auth-toggle-btn" id="tab-register" type="button">Register</button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
     <header class="top-bar panel">

@@ -1279,6 +1279,10 @@ input[type="range"] {
   display: none;
 }
 
+#auth-modal.modal-overlay {
+  padding: 20px;
+}
+
 /* Quest Archive: tall card + filters — allow overlay scroll on short viewports */
 #quest-archive-modal.modal-overlay {
   align-items: flex-start;
@@ -1412,6 +1416,247 @@ input[type="range"] {
 .edit-modal-card {
   max-width: 520px;
   text-align: left;
+}
+
+.auth-shell {
+  position: relative;
+  overflow: hidden;
+  width: min(920px, 100%);
+  min-height: 540px;
+  border: 1px solid rgba(247, 207, 109, 0.45);
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at top left, rgba(247, 207, 109, 0.16), transparent 34%),
+    linear-gradient(165deg, #0b1430 0%, #132146 55%, #0e1633 100%);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.04),
+    0 30px 80px rgba(0, 0, 0, 0.56),
+    0 0 60px rgba(247, 207, 109, 0.14);
+  animation: modalSlideUp 0.4s ease;
+}
+
+.auth-shell::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.04), transparent 30%),
+    repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.02) 0 2px, transparent 2px 12px);
+  pointer-events: none;
+}
+
+.auth-close {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  z-index: 220;
+  width: 42px;
+  height: 42px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  background: rgba(8, 13, 30, 0.65);
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: transform 180ms ease, background 180ms ease, border-color 180ms ease;
+}
+
+.auth-close:hover {
+  transform: scale(1.04);
+  background: rgba(15, 24, 50, 0.9);
+  border-color: rgba(247, 207, 109, 0.35);
+}
+
+.auth-panel {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  width: 50%;
+  transition: transform 0.65s ease, opacity 0.65s ease;
+}
+
+.auth-panel-form {
+  left: 0;
+  z-index: 2;
+}
+
+.auth-panel-login {
+  opacity: 1;
+}
+
+.auth-panel-register {
+  opacity: 0;
+  z-index: 1;
+}
+
+.auth-shell.is-register-mode .auth-panel-login {
+  transform: translateX(100%);
+  opacity: 0;
+}
+
+.auth-shell.is-register-mode .auth-panel-register {
+  transform: translateX(100%);
+  opacity: 1;
+  z-index: 5;
+}
+
+.auth-panel-inner {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 100%;
+  padding: 64px 52px 48px;
+  text-align: left;
+}
+
+.auth-kicker {
+  margin: 0 0 10px;
+  color: rgba(247, 207, 109, 0.88);
+  font: 700 0.8rem "Rajdhani", sans-serif;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.auth-title-static {
+  margin-bottom: 12px;
+}
+
+.auth-copy {
+  margin: 0 0 26px;
+  max-width: 330px;
+  color: var(--text-muted);
+  font: 500 1rem/1.6 "Rajdhani", sans-serif;
+}
+
+.auth-form {
+  margin-top: 0;
+}
+
+.auth-form .form-field + .form-field {
+  margin-top: 16px;
+}
+
+.auth-form .field-label {
+  margin-bottom: 8px;
+}
+
+.auth-form input {
+  min-height: 52px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-primary);
+  transition: border-color 180ms ease, box-shadow 180ms ease, background 180ms ease;
+}
+
+.auth-form input::placeholder {
+  color: rgba(219, 224, 255, 0.45);
+}
+
+.auth-form input:focus {
+  outline: none;
+  border-color: rgba(247, 207, 109, 0.45);
+  box-shadow: 0 0 0 3px rgba(247, 207, 109, 0.12);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.auth-error-msg {
+  min-height: 22px;
+  margin: 14px 0 0;
+  color: #ff7b7f;
+  font-size: 0.92rem;
+  display: none;
+}
+
+.auth-form-footer {
+  margin-top: 24px;
+}
+
+.auth-submit-btn {
+  width: 100%;
+}
+
+.auth-overlay-container {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  z-index: 100;
+  width: 50%;
+  height: 100%;
+  overflow: hidden;
+  transition: transform 0.65s ease;
+}
+
+.auth-shell.is-register-mode .auth-overlay-container {
+  transform: translateX(-100%);
+}
+
+.auth-overlay {
+  position: relative;
+  left: -100%;
+  width: 200%;
+  height: 100%;
+  color: #fff;
+  background:
+    radial-gradient(circle at top, rgba(255, 240, 199, 0.26), transparent 30%),
+    linear-gradient(135deg, #7a1d1b 0%, #b03a27 32%, #d08a22 100%);
+  transform: translateX(0);
+  transition: transform 0.65s ease;
+}
+
+.auth-shell.is-register-mode .auth-overlay {
+  transform: translateX(50%);
+}
+
+.auth-overlay-panel {
+  position: absolute;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 50%;
+  height: 100%;
+  padding: 56px 44px;
+  text-align: center;
+  transition: transform 0.65s ease;
+}
+
+.auth-overlay-left {
+  transform: translateX(-20%);
+}
+
+.auth-shell.is-register-mode .auth-overlay-left {
+  transform: translateX(0);
+}
+
+.auth-overlay-right {
+  right: 0;
+}
+
+.auth-shell.is-register-mode .auth-overlay-right {
+  transform: translateX(20%);
+}
+
+.auth-overlay-title {
+  margin: 0 0 14px;
+  font-family: "Cinzel", serif;
+  font-size: 2rem;
+  line-height: 1.2;
+  color: #fff3d6;
+  text-shadow: 0 10px 30px rgba(0, 0, 0, 0.28);
+}
+
+.auth-overlay-copy {
+  margin: 0 auto 24px;
+  max-width: 300px;
+  color: rgba(255, 245, 230, 0.9);
+  font: 500 1rem/1.6 "Rajdhani", sans-serif;
+}
+
+.auth-toggle-btn {
+  min-width: 160px;
+  align-self: center;
 }
 
 .edit-quest-form {
@@ -1842,6 +2087,87 @@ input[type="range"] {
 .login-warning-text {
   flex: 1;
   letter-spacing: 0.02em;
+}
+
+@media (max-width: 900px) {
+  #auth-modal.modal-overlay {
+    padding: 14px;
+    align-items: flex-start;
+    overflow-y: auto;
+  }
+
+  .auth-shell {
+    width: min(560px, 100%);
+    min-height: 0;
+  }
+
+  .auth-panel,
+  .auth-overlay-container {
+    position: relative;
+    width: 100%;
+    left: 0;
+    height: auto;
+    transform: none !important;
+  }
+
+  .auth-panel-form {
+    z-index: 2;
+  }
+
+  .auth-panel-login,
+  .auth-panel-register {
+    opacity: 1;
+  }
+
+  .auth-panel-register {
+    display: none;
+  }
+
+  .auth-shell.is-register-mode .auth-panel-login {
+    display: none;
+  }
+
+  .auth-shell.is-register-mode .auth-panel-register {
+    display: block;
+  }
+
+  .auth-overlay-container {
+    overflow: visible;
+  }
+
+  .auth-overlay {
+    left: 0;
+    width: 100%;
+    transform: none !important;
+  }
+
+  .auth-overlay-panel {
+    position: relative;
+    width: 100%;
+    height: auto;
+    padding: 28px 24px 30px;
+    transform: none !important;
+  }
+
+  .auth-overlay-left {
+    display: none;
+  }
+
+  .auth-shell.is-register-mode .auth-overlay-left {
+    display: flex;
+  }
+
+  .auth-shell.is-register-mode .auth-overlay-right {
+    display: none;
+  }
+
+  .auth-panel-inner {
+    padding: 84px 24px 32px;
+  }
+
+  .auth-overlay-title {
+    font-size: 1.6rem;
+  }
 }
 
 .login-warning-close {

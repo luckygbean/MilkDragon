@@ -2,7 +2,7 @@ const API_BASE = window.location.protocol === "file:"
   ? "http://127.0.0.1:5000/api"
   : "/api";
 
-// Track login state — starts as unknown (null), set after initApp resolves
+// Track login state - starts as unknown (null), set after initApp resolves
 let isLoggedIn = false;
 
 // Show top warning banner and then open login modal after a short delay
@@ -264,10 +264,15 @@ const authForm = document.getElementById("auth-form");
 const authUsername = document.getElementById("auth-username");
 const authPassword = document.getElementById("auth-password");
 const authErrorMsg = document.getElementById("auth-error-msg");
+const authRegisterForm = document.getElementById("auth-register-form");
+const authRegisterUsername = document.getElementById("auth-register-username");
+const authRegisterPassword = document.getElementById("auth-register-password");
+const authRegisterErrorMsg = document.getElementById("auth-register-error-msg");
 const tabLogin = document.getElementById("tab-login");
 const tabRegister = document.getElementById("tab-register");
 const authSubmitBtn = document.getElementById("auth-submit-btn");
-const authTitle = document.getElementById("auth-title");
+const authRegisterSubmitBtn = document.getElementById("auth-register-submit-btn");
+const authShell = document.getElementById("auth-shell");
 const headerUsername = document.getElementById("header-username");
 const logoutBtn = document.getElementById("logout-btn");
 const loginBtn = document.getElementById("login-btn");
@@ -294,50 +299,34 @@ loginBtn?.addEventListener("click", () => {
   if (authModal) authModal.style.display = "flex";
 });
 
-// Auth modal ✕ close button — just hides the modal, banner stays
+// Auth modal close button - just hides the modal, banner stays
 document.getElementById("auth-modal-close")?.addEventListener("click", () => {
   if (authModal) authModal.style.display = "none";
 });
 
-// 切换到登录标签
+function setAuthMode(loginMode) {
+  isLoginMode = loginMode;
+  authShell?.classList.toggle("is-register-mode", !loginMode);
+  authSubmitBtn.textContent = loginMode ? "Login to Start" : "Create Hero";
+  if (authRegisterSubmitBtn) authRegisterSubmitBtn.textContent = "Create Hero";
+  authErrorMsg.style.display = "none";
+  if (authRegisterErrorMsg) authRegisterErrorMsg.style.display = "none";
+}
+
 tabLogin?.addEventListener("click", () => {
-  isLoginMode = true;
-  tabLogin.classList.add("is-active");
-  tabLogin.classList.remove("cancel-quest-btn");
-  tabRegister.classList.remove("is-active");
-  tabRegister.classList.add("cancel-quest-btn");
-  authSubmitBtn.textContent = "Login to Start";
-  authTitle.textContent = "Enter the Dungeon";
-  authErrorMsg.style.display = "none";
+  setAuthMode(true);
 });
 
-// 切换到注册标签
 tabRegister?.addEventListener("click", () => {
-  isLoginMode = false;
-  tabRegister.classList.add("is-active");
-  tabRegister.classList.remove("cancel-quest-btn");
-  tabLogin.classList.remove("is-active");
-  tabLogin.classList.add("cancel-quest-btn");
-  authSubmitBtn.textContent = "Create Hero";
-  authTitle.textContent = "Enlist a New Hero";
-  authErrorMsg.style.display = "none";
+  setAuthMode(false);
 });
 
-// 提交表单
-authForm?.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  authErrorMsg.style.display = "none";
-
-  const username = authUsername.value.trim();
-  const password = authPassword.value;
-  const endpoint = isLoginMode ? "/auth/login" : "/auth/register";
-
+async function submitAuth(endpoint, username, password, errorNode, formNode) {
   try {
-    // 独立调用 fetch，避免触发上面的 401 拦截死循环
     const res = await fetch(`${API_BASE}${endpoint}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      credentials: "include", // 接收并保存后端发来的 Cookie
+      credentials: "include",
       body: JSON.stringify({ username, password })
     });
 
@@ -347,19 +336,36 @@ authForm?.addEventListener("submit", async (e) => {
       throw new Error(data.error || "Authentication failed");
     }
 
-    // Login/register success — hide modal, update UI, reload data
     isLoggedIn = true;
     authModal.style.display = "none";
-    authForm.reset();
+    formNode?.reset();
     if (headerUsername) headerUsername.textContent = data.username || "";
     updateAuthUI();
-    initApp();
+    await initApp();
 
   } catch (err) {
-    authErrorMsg.textContent = err.message;
-    authErrorMsg.style.display = "block";
+    if (errorNode) {
+      errorNode.textContent = err.message;
+      errorNode.style.display = "block";
+    }
   }
+}
+
+// 提交登录表单
+authForm?.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  authErrorMsg.style.display = "none";
+  await submitAuth("/auth/login", authUsername.value.trim(), authPassword.value, authErrorMsg, authForm);
 });
+
+// 提交注册表单
+authRegisterForm?.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  authRegisterErrorMsg.style.display = "none";
+  await submitAuth("/auth/register", authRegisterUsername.value.trim(), authRegisterPassword.value, authRegisterErrorMsg, authRegisterForm);
+});
+
+setAuthMode(true);
 
 const DIFFICULTY_RANK = { Easy: 1, Medium: 2, Hard: 3 };
 
@@ -460,7 +466,7 @@ function formatArchiveCompletedAt(task) {
   const t =
     parseTaskTimestamp(task.completedAt)
     ?? parseTaskTimestamp(task.createdAt);
-  if (t === null) return "—";
+  if (t === null) return "-";
   return new Date(t).toLocaleString(undefined, {
     dateStyle: "medium",
     timeStyle: "short",
@@ -1403,7 +1409,7 @@ async function handleProgressUpdate(event) {
       }
       progressNoteInput.value = "";
 
-      // Show congratulations modal — waits for user to click Continue
+      // Show congratulations modal - waits for user to click Continue
       await showQuestCompleteModal(
         task.name,
         battle.completionBonus,
@@ -1505,12 +1511,12 @@ const TUTORIAL_STEPS = [
   {
     targetId: null,
     title: "Welcome to Task Slayer",
-    body: "Task Slayer turns your real-life tasks into an RPG adventure. Complete quests, battle monsters, earn XP, and level up your hero — all by doing actual work. Let's walk through the main features."
+    body: "Task Slayer turns your real-life tasks into an RPG adventure. Complete quests, battle monsters, earn XP, and level up your hero - all by doing actual work. Let's walk through the main features."
   },
   {
     targetId: "top-bar",
     title: "Your Hero Status Bar",
-    body: "The top bar shows your current Player Level and XP progress. Every action you take — submitting progress, completing quests, defeating monsters — earns XP and pushes you toward the next level."
+    body: "The top bar shows your current Player Level and XP progress. Every action you take - submitting progress, completing quests, defeating monsters - earns XP and pushes you toward the next level."
   },
   {
     targetId: "info-overview-grid",
@@ -1536,7 +1542,7 @@ const TUTORIAL_STEPS = [
   {
     targetId: "quest-log-panel",
     title: "Quest Chronicle",
-    body: "The Quest Chronicle logs every action in real time — quests created, progress updates, XP gained, level-ups, and achievements unlocked. It's your full adventure history at a glance."
+    body: "The Quest Chronicle logs every action in real time - quests created, progress updates, XP gained, level-ups, and achievements unlocked. It's your full adventure history at a glance."
   },
   {
     targetId: "achievements-btn",
@@ -1594,7 +1600,7 @@ function tutorialPositionStep(stepIndex) {
       ${x2}px ${y1}px, 0 ${y1}px
     )`;
   } else {
-    // No target — full dark backdrop, no ring
+    // No target - full dark backdrop, no ring
     if (tutorialRing) tutorialRing.hidden = true;
     tutorialBackdrop.style.clipPath = "none";
   }
@@ -1614,7 +1620,7 @@ function tutorialPositionStep(stepIndex) {
     const fitsAbove = r.top - cardH - margin > 0;
 
     if (!targetVisible || (!fitsBelow && !fitsAbove)) {
-      // Target is off-screen or no room either side — center in viewport
+      // Target is off-screen or no room either side - center in viewport
       top  = (vh - cardH) / 2;
       left = (vw - Math.min(420, vw - 32)) / 2;
     } else {
@@ -1641,7 +1647,7 @@ function tutorialRenderStep(stepIndex) {
   tutorialTitleEl.textContent   = step.title;
   tutorialBodyEl.textContent    = step.body;
   tutorialPrevBtn.style.visibility = stepIndex === 0 ? "hidden" : "visible";
-  tutorialNextBtn.textContent   = stepIndex === TUTORIAL_STEPS.length - 1 ? "Finish ✓" : "Next →";
+  tutorialNextBtn.textContent   = stepIndex === TUTORIAL_STEPS.length - 1 ? "Finish" : "Next";
   tutorialPositionStep(stepIndex);
 }
 
@@ -1704,7 +1710,7 @@ async function initApp() {
       api("/player/stats", {}, { silent401: true }),
     ]);
 
-    // Successfully fetched data — user is logged in
+    // Successfully fetched data - user is logged in
     isLoggedIn = true;
     if (authModal) authModal.style.display = "none";
 
@@ -1735,7 +1741,7 @@ async function initApp() {
       }
     }
   } catch (err) {
-    // Not logged in — render in preview mode without blocking
+    // Not logged in - render in preview mode without blocking
     isLoggedIn = false;
     addLogEntry(combatLog, "Preview mode. Log in to save quests and track progress.");
   }
@@ -1750,3 +1756,4 @@ async function initApp() {
 }
 
 initApp();
+
