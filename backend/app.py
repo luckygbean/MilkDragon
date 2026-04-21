@@ -15,6 +15,10 @@ def create_app():
     def serve_index():
         return send_from_directory(FRONTEND_DIR, "index.html")
 
+    @app.route("/admin")
+    def serve_admin():
+        return send_from_directory(FRONTEND_DIR, "admin.html")
+
     @app.route("/<path:path>")
     def serve_static(path):
         if path.startswith("api/"):
@@ -30,12 +34,14 @@ def create_app():
     from routes.player import player_bp
     from routes.achievements import achievements_bp
     from routes.auth import auth_bp
+    from routes.admin import admin_bp
 
     app.register_blueprint(tasks_bp, url_prefix="/api")
     app.register_blueprint(battle_bp, url_prefix="/api")
     app.register_blueprint(player_bp, url_prefix="/api")
     app.register_blueprint(achievements_bp, url_prefix="/api")
     app.register_blueprint(auth_bp, url_prefix="/api/auth")
+    app.register_blueprint(admin_bp, url_prefix="/api")
 
     return app
 

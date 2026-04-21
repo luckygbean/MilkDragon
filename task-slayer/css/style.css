@@ -76,9 +76,10 @@ body.battle-mode::before {
 }
 
 .page-shell {
-  width: min(1440px, calc(100% - 32px));
+  width: min(1440px, 100%);
   margin: 0 auto;
-  padding: 24px 0 40px;
+  padding: 24px 16px 40px;
+  box-sizing: border-box;
 }
 
 body.battle-mode .page-shell {
@@ -346,7 +347,8 @@ body.battle-mode .scene-stack {
 .create-quest-panel,
 .active-quests-panel,
 .completed-quests-panel,
-.quest-detail-panel {
+.quest-detail-panel,
+.quest-log-panel {
   padding: 20px;
 }
 
@@ -1807,6 +1809,62 @@ input[type="range"] {
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+/* ── Login Warning Banner ── */
+
+.login-warning-banner {
+  position: relative;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 20px;
+  margin-bottom: 8px;
+  border-radius: 14px;
+  background: linear-gradient(90deg, #7b1a1a, #a82828);
+  border: 1px solid #ff6b6b;
+  color: #fff;
+  font-family: "Rajdhani", sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  box-shadow: 0 4px 20px rgba(200, 50, 50, 0.4);
+  animation: warningSlideDown 0.35s ease;
+}
+
+.login-warning-banner[hidden] {
+  display: none;
+}
+
+.login-warning-icon {
+  font-size: 1.3rem;
+  flex-shrink: 0;
+}
+
+.login-warning-text {
+  flex: 1;
+  letter-spacing: 0.02em;
+}
+
+.login-warning-close {
+  flex-shrink: 0;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 1.4rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 4px;
+  transition: color 150ms ease;
+}
+
+.login-warning-close:hover {
+  color: #fff;
+}
+
+@keyframes warningSlideDown {
+  from { transform: translateY(-100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
 @keyframes modalFadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
@@ -1815,4 +1873,162 @@ input[type="range"] {
 @keyframes modalSlideUp {
   from { opacity: 0; transform: translateY(30px) scale(0.95); }
   to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ══════════════════════════════════════════
+   Tutorial Overlay
+══════════════════════════════════════════ */
+
+.tutorial-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 11000;
+  pointer-events: none;
+}
+
+.tutorial-overlay[hidden] {
+  display: none;
+}
+
+/* Full-screen dark backdrop — the spotlight is punched out via JS clip-path */
+.tutorial-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(4, 8, 20, 0.82);
+  pointer-events: all;
+  transition: clip-path 420ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Highlighted element ring — injected via JS as a sibling */
+.tutorial-spotlight-ring {
+  position: fixed;
+  border-radius: 14px;
+  box-shadow:
+    0 0 0 3px var(--gold),
+    0 0 28px 4px rgba(247, 207, 109, 0.45);
+  pointer-events: none;
+  z-index: 11001;
+  transition:
+    top 420ms cubic-bezier(0.4, 0, 0.2, 1),
+    left 420ms cubic-bezier(0.4, 0, 0.2, 1),
+    width 420ms cubic-bezier(0.4, 0, 0.2, 1),
+    height 420ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Floating step card */
+.tutorial-card {
+  position: fixed;
+  z-index: 11002;
+  width: min(420px, calc(100vw - 32px));
+  background: linear-gradient(160deg, #0d1730 0%, #162044 55%, #0d1730 100%);
+  border: 1px solid var(--gold);
+  border-radius: 18px;
+  padding: 24px 28px 20px;
+  box-shadow:
+    0 0 50px rgba(247, 207, 109, 0.18),
+    0 16px 40px rgba(0, 0, 0, 0.6);
+  pointer-events: all;
+  animation: tutorialCardIn 0.35s ease;
+  transition: top 420ms cubic-bezier(0.4, 0, 0.2, 1),
+              left 420ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes tutorialCardIn {
+  from { opacity: 0; transform: scale(0.93) translateY(12px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.tutorial-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.tutorial-step-badge {
+  font-family: "Rajdhani", sans-serif;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--gold);
+  background: rgba(247, 207, 109, 0.12);
+  border: 1px solid rgba(247, 207, 109, 0.3);
+  border-radius: 999px;
+  padding: 3px 10px;
+}
+
+.tutorial-skip-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-family: "Rajdhani", sans-serif;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  padding: 2px 6px;
+  opacity: 0.7;
+  transition: opacity 150ms;
+}
+.tutorial-skip-btn:hover { opacity: 1; }
+
+.tutorial-title {
+  font-family: "Cinzel", serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--gold);
+  margin: 0 0 10px;
+  text-shadow: 0 0 14px rgba(247, 207, 109, 0.35);
+}
+
+.tutorial-body {
+  font-family: "Rajdhani", sans-serif;
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  line-height: 1.6;
+  margin: 0 0 18px;
+}
+
+.tutorial-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.tutorial-nav-btn {
+  font-family: "Cinzel", serif;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  cursor: pointer;
+  border-radius: 10px;
+  padding: 9px 18px;
+  transition: transform 150ms, filter 150ms;
+}
+.tutorial-nav-btn:hover { transform: translateY(-1px); filter: brightness(1.1); }
+.tutorial-nav-btn:active { transform: translateY(1px); }
+
+.tutorial-prev-btn {
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: var(--text-muted);
+}
+
+.tutorial-next-btn {
+  background: linear-gradient(180deg, var(--button-top), var(--button-bottom));
+  border: none;
+  color: #241003;
+  box-shadow: 0 6px 18px rgba(181, 109, 17, 0.35);
+}
+
+/* tutorial-btn style — matches scene-banner secondary buttons */
+.tutorial-btn {
+  font-size: 0.82rem !important;
+  padding: 10px 16px !important;
+  background: rgba(247, 207, 109, 0.12) !important;
+  border: 1px solid rgba(247, 207, 109, 0.35) !important;
+  color: var(--gold) !important;
+  box-shadow: none !important;
 }

@@ -11,9 +11,18 @@
 </head>
 <body>
   <div class="page-shell">
-    <div class="modal-overlay" id="auth-modal" style="z-index: 9999;">
+    <!-- Top warning banner: visible when not logged in -->
+    <div id="login-warning-banner" class="login-warning-banner">
+      <span class="login-warning-icon">&#9888;</span>
+      <span class="login-warning-text">You must be logged in to use this feature. Please log in to continue.</span>
+    </div>
+
+    <div class="modal-overlay" id="auth-modal" style="z-index: 9999; display: none;">
       <div class="modal-card edit-modal-card">
-        <h2 class="modal-title" id="auth-title">Enter the Dungeon</h2>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+          <h2 class="modal-title" id="auth-title" style="margin: 0;">Enter the Dungeon</h2>
+          <button id="auth-modal-close" type="button" aria-label="Close" style="background: transparent; border: none; color: rgba(255,255,255,0.6); font-size: 1.5rem; line-height: 1; cursor: pointer; padding: 0 4px;">&times;</button>
+        </div>
         <div style="margin-bottom: 20px; display: flex; gap: 10px;">
           <button class="action-button is-active" id="tab-login" type="button" style="flex: 1;">Login</button>
           <button class="action-button cancel-quest-btn" id="tab-register" type="button" style="flex: 1;">Register</button>
@@ -60,7 +69,8 @@
 
       <div class="header-auth" id="header-auth">
         <span class="header-username" id="header-username"></span>
-        <button class="action-button cancel-quest-btn" id="logout-btn" type="button">Logout</button>
+        <button class="action-button save-quest-btn" id="login-btn" type="button">Login</button>
+        <button class="action-button cancel-quest-btn" id="logout-btn" type="button" style="display: none;">Logout</button>
       </div>
     </header>
 
@@ -73,6 +83,7 @@
           </div>
           <div class="scene-banner-actions">
             <span class="scene-chip">Quest Management</span>
+            <button class="action-button tutorial-btn" id="tutorial-btn" type="button">How to Play</button>
             <button class="action-button achievements-btn" id="achievements-btn" type="button">Achievements</button>
           </div>
         </div>
@@ -524,6 +535,25 @@
         </div>
         <div class="modal-achievements" id="modal-achievements" hidden></div>
         <button class="action-button modal-close-btn" id="modal-close-btn" type="button">Continue</button>
+      </div>
+    </div>
+
+    <!-- ── Tutorial Overlay ── -->
+    <div id="tutorial-overlay" class="tutorial-overlay" hidden>
+      <!-- Dark backdrop with spotlight cutout -->
+      <div class="tutorial-backdrop" id="tutorial-backdrop"></div>
+      <!-- Floating step card -->
+      <div class="tutorial-card" id="tutorial-card">
+        <div class="tutorial-card-header">
+          <span class="tutorial-step-badge" id="tutorial-step-badge">1 / 6</span>
+          <button class="tutorial-skip-btn" id="tutorial-skip-btn" type="button">Skip</button>
+        </div>
+        <h3 class="tutorial-title" id="tutorial-title">Welcome to Task Slayer</h3>
+        <p class="tutorial-body" id="tutorial-body"></p>
+        <div class="tutorial-footer">
+          <button class="tutorial-nav-btn tutorial-prev-btn" id="tutorial-prev-btn" type="button">&#8592; Back</button>
+          <button class="tutorial-nav-btn tutorial-next-btn" id="tutorial-next-btn" type="button">Next &#8594;</button>
+        </div>
       </div>
     </div>
   </div>

@@ -2,16 +2,36 @@ const API_BASE = window.location.protocol === "file:"
   ? "http://127.0.0.1:5000/api"
   : "/api";
 
-async function api(path, options = {}) {
+// Track login state — starts as unknown (null), set after initApp resolves
+let isLoggedIn = false;
+
+// Show top warning banner and then open login modal after a short delay
+function showLoginRequired() {
+  const banner = document.getElementById("login-warning-banner");
+  const modal = document.getElementById("auth-modal");
+  if (banner) {
+    banner.hidden = false;
+    // Re-trigger animation each time
+    banner.style.animation = "none";
+    void banner.offsetWidth;
+    banner.style.animation = "";
+  }
+  // Open login modal after a short pause so banner is seen first
+  window.setTimeout(() => {
+    if (modal) modal.style.display = "flex";
+  }, 600);
+}
+
+async function api(path, options = {}, { silent401 = false } = {}) {
   const res = await fetch(`${API_BASE}${path}`, {
     headers: { "Content-Type": "application/json" },
     credentials: "include",
     ...options,
   });
   if (!res.ok) {
-    if (res.status === 401 && !path.startsWith("/auth")) {
-      const authModal = document.getElementById("auth-modal");
-      if (authModal) authModal.style.display = "flex";
+    if (res.status === 401 && !path.startsWith("/auth") && !silent401) {
+      isLoggedIn = false;
+      showLoginRequired();
     }
     const err = await res.json().catch(() => ({ error: "Request failed" }));
     throw new Error(err.error || `API error: ${res.status}`);
@@ -250,8 +270,34 @@ const authSubmitBtn = document.getElementById("auth-submit-btn");
 const authTitle = document.getElementById("auth-title");
 const headerUsername = document.getElementById("header-username");
 const logoutBtn = document.getElementById("logout-btn");
+const loginBtn = document.getElementById("login-btn");
 
 let isLoginMode = true; // true: 登录模式, false: 注册模式
+
+// Update header buttons and warning banner based on login state
+function updateAuthUI() {
+  if (isLoggedIn) {
+    if (loginBtn) loginBtn.style.display = "none";
+    if (logoutBtn) logoutBtn.style.display = "";
+    const banner = document.getElementById("login-warning-banner");
+    if (banner) banner.hidden = true;
+  } else {
+    if (loginBtn) loginBtn.style.display = "";
+    if (logoutBtn) logoutBtn.style.display = "none";
+    const banner = document.getElementById("login-warning-banner");
+    if (banner) banner.hidden = false;
+  }
+}
+
+// Header Login button opens login modal
+loginBtn?.addEventListener("click", () => {
+  if (authModal) authModal.style.display = "flex";
+});
+
+// Auth modal ✕ close button — just hides the modal, banner stays
+document.getElementById("auth-modal-close")?.addEventListener("click", () => {
+  if (authModal) authModal.style.display = "none";
+});
 
 // 切换到登录标签
 tabLogin?.addEventListener("click", () => {
@@ -301,10 +347,12 @@ authForm?.addEventListener("submit", async (e) => {
       throw new Error(data.error || "Authentication failed");
     }
 
-    // 登录/注册成功！隐藏弹窗，更新用户名，重新加载游戏数据
+    // Login/register success — hide modal, update UI, reload data
+    isLoggedIn = true;
     authModal.style.display = "none";
     authForm.reset();
     if (headerUsername) headerUsername.textContent = data.username || "";
+    updateAuthUI();
     initApp();
 
   } catch (err) {
@@ -584,6 +632,11 @@ function closeQuestArchiveModal() {
 }
 
 async function openQuestArchiveModal() {
+  if (!isLoggedIn) {
+    showLoginRequired();
+    return;
+  }
+
   try {
     const data = await api("/tasks?include_completed=true");
     completedTasks = data.tasks.filter((t) => t.isCompleted);
@@ -1128,6 +1181,11 @@ function selectEditDifficulty(nextDifficulty) {
 }
 
 function openEditModal(taskId) {
+  if (!isLoggedIn) {
+    showLoginRequired();
+    return;
+  }
+
   const task = tasks.find((t) => t.id === taskId);
   if (!task) return;
 
@@ -1194,6 +1252,11 @@ async function handleEditDelete() {
 }
 
 async function openAchievementsModal() {
+  if (!isLoggedIn) {
+    showLoginRequired();
+    return;
+  }
+
   try {
     const data = await api("/achievements");
     const achievements = data.achievements;
@@ -1223,6 +1286,11 @@ async function openAchievementsModal() {
 async function handleCreateTask(event) {
   event.preventDefault();
 
+  if (!isLoggedIn) {
+    showLoginRequired();
+    return;
+  }
+
   const name = taskNameInput.value.trim();
   const description = taskDescriptionInput.value.trim();
   const difficulty = taskDifficultyInput.value;
@@ -1251,6 +1319,12 @@ async function handleCreateTask(event) {
 
 async function handleProgressUpdate(event) {
   event.preventDefault();
+
+  if (!isLoggedIn) {
+    showLoginRequired();
+    return;
+  }
+
   const task = getSelectedTask();
   if (!task) return;
 
@@ -1369,13 +1443,9 @@ logoutBtn?.addEventListener("click", async () => {
   } catch (_) {
     // ignore network errors on logout
   }
-  if (headerUsername) headerUsername.textContent = "";
-  tasks = [];
-  completedTasks = [];
-  selectedTaskId = null;
-  if (authModal) authModal.style.display = "flex";
-  renderInfoDashboard();
+  window.location.reload();
 });
+
 
 backToInfoButton.addEventListener("click", () => switchScene("info"));
 createTaskForm.addEventListener("submit", handleCreateTask);
@@ -1416,8 +1486,10 @@ archiveFilterMonster?.addEventListener("change", () => {
   if (!questArchiveModal?.hidden) renderQuestArchiveModal();
 });
 document.addEventListener("keydown", (e) => {
-  if (e.key === "Escape" && questArchiveModal && !questArchiveModal.hidden) {
-    closeQuestArchiveModal();
+  if (e.key === "Escape") {
+    if (questArchiveModal && !questArchiveModal.hidden) closeQuestArchiveModal();
+    const tov = document.getElementById("tutorial-overlay");
+    if (tov && !tov.hidden) closeTutorial();
   }
 });
 window.addEventListener("resize", () => {
@@ -1425,21 +1497,218 @@ window.addEventListener("resize", () => {
   updateMonsterAttackOffset();
 });
 
+// ══════════════════════════════════════════
+// Tutorial System
+// ══════════════════════════════════════════
+
+const TUTORIAL_STEPS = [
+  {
+    targetId: null,
+    title: "Welcome to Task Slayer",
+    body: "Task Slayer turns your real-life tasks into an RPG adventure. Complete quests, battle monsters, earn XP, and level up your hero — all by doing actual work. Let's walk through the main features."
+  },
+  {
+    targetId: "top-bar",
+    title: "Your Hero Status Bar",
+    body: "The top bar shows your current Player Level and XP progress. Every action you take — submitting progress, completing quests, defeating monsters — earns XP and pushes you toward the next level."
+  },
+  {
+    targetId: "info-overview-grid",
+    title: "Hero, Quest & Monster Panel",
+    body: "The three panels at the top give you a live snapshot: your Hero on the left, the currently selected quest in the center (with deadline, progress, and details), and the Monster guarding that quest on the right. Every quest is assigned a monster based on difficulty."
+  },
+  {
+    targetId: "create-task-form",
+    title: "Create a New Quest",
+    body: "Use this form to create a new task. Give it a name, description, difficulty level (Easy / Medium / Hard), and a deadline. Harder quests face tougher monsters but award more XP on completion."
+  },
+  {
+    targetId: "active-quests-panel",
+    title: "Quest Board",
+    body: "All your active quests appear here. Click any quest to select it and view its details. Use the Edit button to update or delete a quest. Completed quests move to the Quest Archive below."
+  },
+  {
+    targetId: "quest-detail-panel",
+    pad: 16,
+    title: "Daily Progress Updates",
+    body: "Each day, drag the slider to set your current completion percentage and write a note about what you accomplished. Submitting progress deals damage to the monster, awards XP, and triggers a battle animation."
+  },
+  {
+    targetId: "quest-log-panel",
+    title: "Quest Chronicle",
+    body: "The Quest Chronicle logs every action in real time — quests created, progress updates, XP gained, level-ups, and achievements unlocked. It's your full adventure history at a glance."
+  },
+  {
+    targetId: "achievements-btn",
+    title: "Achievements",
+    body: "Click Achievements to see all unlockable badges. Earn them by completing quests, building streaks, leveling up, and defeating every monster type. How many can you unlock?"
+  }
+];
+
+let tutorialCurrentStep = 0;
+let tutorialRing = null;
+
+const tutorialOverlay  = document.getElementById("tutorial-overlay");
+const tutorialBackdrop = document.getElementById("tutorial-backdrop");
+const tutorialCard     = document.getElementById("tutorial-card");
+const tutorialStepBadge = document.getElementById("tutorial-step-badge");
+const tutorialTitleEl  = document.getElementById("tutorial-title");
+const tutorialBodyEl   = document.getElementById("tutorial-body");
+const tutorialPrevBtn  = document.getElementById("tutorial-prev-btn");
+const tutorialNextBtn  = document.getElementById("tutorial-next-btn");
+const tutorialSkipBtn  = document.getElementById("tutorial-skip-btn");
+const tutorialTrigger  = document.getElementById("tutorial-btn");
+
+function tutorialGetTarget(targetId) {
+  if (!targetId) return null;
+  return document.getElementById(targetId) || document.querySelector("." + targetId);
+}
+
+function tutorialPositionStep(stepIndex) {
+  const step = TUTORIAL_STEPS[stepIndex];
+  const target = tutorialGetTarget(step.targetId);
+
+  // Update spotlight ring position
+  if (target) {
+    const r = target.getBoundingClientRect();
+    const pad = step.pad ?? 12;
+    if (!tutorialRing) {
+      tutorialRing = document.createElement("div");
+      tutorialRing.className = "tutorial-spotlight-ring";
+      document.body.appendChild(tutorialRing);
+    }
+    tutorialRing.style.top    = `${r.top - pad}px`;
+    tutorialRing.style.left   = `${r.left - pad}px`;
+    tutorialRing.style.width  = `${r.width + pad * 2}px`;
+    tutorialRing.style.height = `${r.height + pad * 2}px`;
+    tutorialRing.style.borderRadius = window.getComputedStyle(target).borderRadius || "14px";
+    tutorialRing.hidden = false;
+
+    // Punch a transparent hole in the backdrop using clip-path polygon
+    const vw = window.innerWidth, vh = window.innerHeight;
+    const x1 = r.left - pad, y1 = r.top - pad;
+    const x2 = r.right + pad, y2 = r.bottom + pad;
+    tutorialBackdrop.style.clipPath = `polygon(
+      0 0, ${vw}px 0, ${vw}px ${vh}px, 0 ${vh}px,
+      0 ${y1}px, ${x1}px ${y1}px, ${x1}px ${y2}px, ${x2}px ${y2}px,
+      ${x2}px ${y1}px, 0 ${y1}px
+    )`;
+  } else {
+    // No target — full dark backdrop, no ring
+    if (tutorialRing) tutorialRing.hidden = true;
+    tutorialBackdrop.style.clipPath = "none";
+  }
+
+  // Position the card: try below target, then above, then center
+  const cardW = 420 + 16;
+  const cardH = 220;
+  const margin = 16;
+  let top, left;
+
+  if (target) {
+    const r = target.getBoundingClientRect();
+    const vw = window.innerWidth, vh = window.innerHeight;
+    // Check if target is mostly visible in the viewport
+    const targetVisible = r.top < vh && r.bottom > 0;
+    const fitsBelow = r.bottom + cardH + margin < vh;
+    const fitsAbove = r.top - cardH - margin > 0;
+
+    if (!targetVisible || (!fitsBelow && !fitsAbove)) {
+      // Target is off-screen or no room either side — center in viewport
+      top  = (vh - cardH) / 2;
+      left = (vw - Math.min(420, vw - 32)) / 2;
+    } else {
+      left = Math.min(Math.max(r.left, margin), vw - cardW - margin);
+      if (fitsBelow) {
+        top = r.bottom + margin + 8;
+      } else {
+        top = r.top - cardH - margin - 8;
+      }
+    }
+  } else {
+    // Center screen
+    top  = (window.innerHeight - cardH) / 2;
+    left = (window.innerWidth - Math.min(420, window.innerWidth - 32)) / 2;
+  }
+
+  tutorialCard.style.top  = `${top}px`;
+  tutorialCard.style.left = `${left}px`;
+}
+
+function tutorialRenderStep(stepIndex) {
+  const step = TUTORIAL_STEPS[stepIndex];
+  tutorialStepBadge.textContent = `${stepIndex + 1} / ${TUTORIAL_STEPS.length}`;
+  tutorialTitleEl.textContent   = step.title;
+  tutorialBodyEl.textContent    = step.body;
+  tutorialPrevBtn.style.visibility = stepIndex === 0 ? "hidden" : "visible";
+  tutorialNextBtn.textContent   = stepIndex === TUTORIAL_STEPS.length - 1 ? "Finish ✓" : "Next →";
+  tutorialPositionStep(stepIndex);
+}
+
+function openTutorial() {
+  tutorialCurrentStep = 0;
+  tutorialOverlay.hidden = false;
+  tutorialRenderStep(0);
+}
+
+function closeTutorial() {
+  tutorialOverlay.hidden = true;
+  tutorialBackdrop.style.clipPath = "none";
+  if (tutorialRing) { tutorialRing.hidden = true; }
+}
+
+tutorialTrigger?.addEventListener("click", openTutorial);
+
+tutorialNextBtn?.addEventListener("click", () => {
+  if (tutorialCurrentStep < TUTORIAL_STEPS.length - 1) {
+    tutorialCurrentStep++;
+    tutorialRenderStep(tutorialCurrentStep);
+  } else {
+    closeTutorial();
+  }
+});
+
+tutorialPrevBtn?.addEventListener("click", () => {
+  if (tutorialCurrentStep > 0) {
+    tutorialCurrentStep--;
+    tutorialRenderStep(tutorialCurrentStep);
+  }
+});
+
+tutorialSkipBtn?.addEventListener("click", closeTutorial);
+
+window.addEventListener("resize", () => {
+  if (tutorialOverlay && !tutorialOverlay.hidden) {
+    tutorialPositionStep(tutorialCurrentStep);
+  }
+});
+
+let _tutorialScrollRaf = null;
+window.addEventListener("scroll", () => {
+  if (!tutorialOverlay || tutorialOverlay.hidden) return;
+  if (_tutorialScrollRaf) return;
+  _tutorialScrollRaf = requestAnimationFrame(() => {
+    tutorialPositionStep(tutorialCurrentStep);
+    _tutorialScrollRaf = null;
+  });
+}, { passive: true });
+
 async function initApp() {
   setupAssetFrames();
   selectDifficulty(taskDifficultyInput.value);
 
   try {
     const [taskData, completedData, statsData] = await Promise.all([
-      api("/tasks"),
-      api("/tasks?include_completed=true"),
-      api("/player/stats"),
+      api("/tasks", {}, { silent401: true }),
+      api("/tasks?include_completed=true", {}, { silent401: true }),
+      api("/player/stats", {}, { silent401: true }),
     ]);
 
-    // 如果成功拿到数据，说明已登录，隐藏拦截弹窗
+    // Successfully fetched data — user is logged in
+    isLoggedIn = true;
     if (authModal) authModal.style.display = "none";
 
-    // 获取当前用户名并显示在 header
+    // Get current username for header
     try {
       const meData = await api("/auth/me");
       if (headerUsername) headerUsername.textContent = meData.username || "";
@@ -1466,10 +1735,12 @@ async function initApp() {
       }
     }
   } catch (err) {
-    // 此时大概率是因为 401 未登录被拦截，页面会保持显示登录弹窗
-    addLogEntry(combatLog, `Waiting for hero authentication... (${err.message})`);
+    // Not logged in — render in preview mode without blocking
+    isLoggedIn = false;
+    addLogEntry(combatLog, "Preview mode. Log in to save quests and track progress.");
   }
 
+  updateAuthUI();
   applyCurrentMonsterVisuals();
   updateHeroAttackOffset();
   updateMonsterAttackOffset();
