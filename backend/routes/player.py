@@ -27,7 +27,8 @@ def reset_player():
            SET hero_level = 1, current_xp = 0, xp_to_level = 100,
                hero_hp = 60, hero_max_hp = 60,
                total_tasks_completed = 0, total_damage_dealt = 0,
-               current_streak = 0, best_streak = 0, last_completion_date = NULL
+               current_streak = 0, best_streak = 0, last_completion_date = NULL,
+               coins = 0
            WHERE user_id = ?""",
         (user_id,)
     )

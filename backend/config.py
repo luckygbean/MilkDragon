@@ -28,3 +28,6 @@ XP_PER_PROGRESS_UPDATE = 10
 
 # Fixed bonus XP awarded when a quest is completed (on top of difficulty bonus)
 XP_QUEST_COMPLETE_BONUS = 100
+
+# Coins awarded per level-up
+COINS_PER_LEVEL_UP = 50

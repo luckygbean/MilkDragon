@@ -1,5 +1,5 @@
 from database import get_db
-from config import XP_PER_HIT, XP_COMPLETION_BONUS, XP_PER_PROGRESS_UPDATE
+from config import XP_PER_HIT, XP_COMPLETION_BONUS, XP_PER_PROGRESS_UPDATE, COINS_PER_LEVEL_UP
 
 
 def xp_required_for_level(level):
@@ -27,22 +27,26 @@ def apply_xp(user_id, xp_amount):
     current_xp = stats["current_xp"] + xp_amount
     hero_level = stats["hero_level"]
     xp_to_level = stats["xp_to_level"]
+    coins = stats.get("coins", 0)
     leveled_up = False
+    levels_gained = 0
 
     while current_xp >= xp_to_level:
         current_xp -= xp_to_level
         hero_level += 1
         xp_to_level = xp_required_for_level(hero_level)
         leveled_up = True
+        levels_gained += 1
 
+    coins += levels_gained * COINS_PER_LEVEL_UP
     hero_max_hp = hero_max_hp_for_level(hero_level)
 
     db.execute(
         """UPDATE player_stats
            SET current_xp = ?, hero_level = ?, xp_to_level = ?,
-               hero_max_hp = ?, hero_hp = ?
+               hero_max_hp = ?, hero_hp = ?, coins = ?
            WHERE user_id = ?""",
-        (current_xp, hero_level, xp_to_level, hero_max_hp, hero_max_hp, user_id),
+        (current_xp, hero_level, xp_to_level, hero_max_hp, hero_max_hp, coins, user_id),
     )
     db.commit()
 
@@ -53,6 +57,8 @@ def apply_xp(user_id, xp_amount):
         "heroHp": hero_max_hp,
         "heroMaxHp": hero_max_hp,
         "leveledUp": leveled_up,
+        "coinsEarned": levels_gained * COINS_PER_LEVEL_UP,
+        "coins": coins,
     }
 
 
@@ -75,4 +81,5 @@ def format_player_stats(stats):
         "totalDamageDealt": stats["total_damage_dealt"],
         "currentStreak": stats["current_streak"],
         "bestStreak": stats["best_streak"],
+        "coins": stats.get("coins", 0),
     }

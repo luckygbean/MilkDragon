@@ -28,6 +28,12 @@ def init_db(app):
             db.executescript(f.read())
         db.commit()
 
+        # Migrate: add coins column if missing
+        cols = [row[1] for row in db.execute("PRAGMA table_info(player_stats)").fetchall()]
+        if "coins" not in cols:
+            db.execute("ALTER TABLE player_stats ADD COLUMN coins INTEGER NOT NULL DEFAULT 0")
+            db.commit()
+
         # Seed monsters if table is empty
         count = db.execute("SELECT COUNT(*) FROM monsters").fetchone()[0]
         if count == 0:

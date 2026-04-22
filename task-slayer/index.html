@@ -95,6 +95,14 @@
         <h1>Task Slayer</h1>
       </div>
 
+      <div class="coins-box">
+        <span class="coins-icon">&#9775;</span>
+        <div>
+          <span class="level-label">Coins</span>
+          <span class="coins-value" id="player-coins">0</span>
+        </div>
+      </div>
+
       <div class="level-box">
         <span class="level-label">Player Level</span>
         <span class="level-value" id="player-level">7</span>
@@ -127,6 +135,7 @@
           <div class="scene-banner-actions">
             <span class="scene-chip">Quest Management</span>
             <button class="action-button tutorial-btn" id="tutorial-btn" type="button">How to Play</button>
+            <button class="action-button shop-btn" id="shop-btn" type="button">&#9775; Shop</button>
             <button class="action-button achievements-btn" id="achievements-btn" type="button">Achievements</button>
           </div>
         </div>
@@ -279,6 +288,10 @@
                   <h3>Active Quests</h3>
                 </div>
                 <span class="scene-chip" id="quest-count-chip">3 Active</span>
+              </div>
+
+              <div class="quest-search-wrap">
+                <input class="quest-search-input" id="quest-search-input" type="search" placeholder="Search quests…" autocomplete="off">
               </div>
 
               <div class="active-quest-list" id="active-task-list" aria-live="polite"></div>
@@ -599,6 +612,19 @@
         </div>
       </div>
     </div>
+  </div>
+
+  <!-- Bottom-right status bar -->
+  <div class="status-bar" id="status-bar">
+    <span class="status-bar-item" id="status-today">
+      <span class="status-dot status-dot-gold"></span>
+      Due today: <strong id="status-today-count">0</strong> quests
+    </span>
+    <span class="status-bar-divider">|</span>
+    <span class="status-bar-item status-bar-item-danger" id="status-overdue">
+      <span class="status-dot status-dot-red"></span>
+      Overdue: <strong id="status-overdue-count">0</strong> quests
+    </span>
   </div>
 
   <script src="./js/battle.js"></script>

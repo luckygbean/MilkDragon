@@ -53,7 +53,8 @@ CREATE TABLE IF NOT EXISTS player_stats (
     total_damage_dealt     INTEGER NOT NULL DEFAULT 0,
     current_streak         INTEGER NOT NULL DEFAULT 0,
     best_streak            INTEGER NOT NULL DEFAULT 0,
-    last_completion_date   TEXT
+    last_completion_date   TEXT,
+    coins                  INTEGER NOT NULL DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS achievements (

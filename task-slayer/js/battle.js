@@ -51,7 +51,8 @@ const battleState = {
   attackDamage: 40,
   enemyAttackDamage: 24,
   currentScene: "info",
-  actionLocked: false
+  actionLocked: false,
+  coins: 0,
 };
 
 const assetConfig = {
@@ -165,6 +166,7 @@ let tasks = [];
 let completedTasks = [];
 let selectedTaskId = null;
 let currentMonster = monsterCatalog[0];
+let questSearchQuery = "";
 
 const body = document.body;
 const infoScene = document.getElementById("info-scene");
@@ -180,6 +182,7 @@ const battleHpText = document.getElementById("battle-hp-text");
 const heroStaticFill = document.getElementById("hero-static-fill");
 const heroHpText = document.getElementById("hero-hp-text");
 const playerLevel = document.getElementById("player-level");
+const playerCoins = document.getElementById("player-coins");
 const combatLog = document.getElementById("combat-log");
 const battleLog = document.getElementById("battle-log");
 const monsterIntent = document.getElementById("monster-intent");
@@ -242,6 +245,7 @@ const editDifficultyToggle = document.getElementById("edit-difficulty-toggle");
 const editTaskDifficulty = document.getElementById("edit-task-difficulty");
 const editDeleteBtn = document.getElementById("edit-delete-btn");
 const editCancelBtn = document.getElementById("edit-cancel-btn");
+const shopBtn = document.getElementById("shop-btn");
 const achievementsBtn = document.getElementById("achievements-btn");
 const achievementsModal = document.getElementById("achievements-modal");
 const achievementsGrid = document.getElementById("achievements-grid");
@@ -249,6 +253,7 @@ const achievementsCloseBtn = document.getElementById("achievements-close-btn");
 const archiveDetailBtn = document.getElementById("archive-detail-btn");
 const questArchiveModal = document.getElementById("quest-archive-modal");
 const questArchiveCloseBtn = document.getElementById("quest-archive-close-btn");
+const questSearchInput = document.getElementById("quest-search-input");
 const archiveSearchInput = document.getElementById("archive-search-input");
 const archiveSortSelect = document.getElementById("archive-sort-select");
 const archiveFilterDifficulty = document.getElementById("archive-filter-difficulty");
@@ -434,6 +439,20 @@ function getDifficultyLabel(difficulty) {
 
 function getDifficultyClass(difficulty) {
   return difficulty.toLowerCase();
+}
+
+function getDeadlineChip(deadline) {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const due = new Date(`${deadline}T00:00:00`);
+  const diffDays = Math.round((due - today) / 86400000);
+  if (diffDays < 0) {
+    return `<span class="quest-pill deadline-expired">${Math.abs(diffDays)} days expired</span>`;
+  }
+  if (diffDays <= 3) {
+    return `<span class="quest-pill deadline-warning">${diffDays === 0 ? "Due today" : `${diffDays} days left`}</span>`;
+  }
+  return "";
 }
 
 function parseTaskTimestamp(value) {
@@ -920,9 +939,25 @@ function setBattleMonsterState(state) {
 
 function renderTaskList() {
   activeTaskList.innerHTML = "";
-  questCountChip.textContent = `${tasks.length} Active`;
 
-  tasks.forEach((task) => {
+  const q = questSearchQuery.trim().toLowerCase();
+  const sorted = [...tasks].sort((a, b) => {
+    const da = a.deadline ?? "";
+    const db = b.deadline ?? "";
+    return da < db ? -1 : da > db ? 1 : 0;
+  });
+  const filtered = q
+    ? sorted.filter((t) => t.name.toLowerCase().includes(q))
+    : sorted;
+
+  questCountChip.textContent = `${filtered.length} Active`;
+
+  if (filtered.length === 0 && q) {
+    activeTaskList.innerHTML = `<p style="color:var(--text-muted);font-size:0.9rem;padding:8px 0;">No quests match "${q}".</p>`;
+    return;
+  }
+
+  filtered.forEach((task) => {
     const button = document.createElement("button");
     button.type = "button";
     button.className = `quest-list-item ${task.id === selectedTaskId ? "is-selected" : ""}`;
@@ -939,6 +974,7 @@ function renderTaskList() {
       <div class="quest-item-meta">
         <span class="quest-pill ${getDifficultyClass(task.difficulty)}">${task.difficulty}</span>
         <span class="quest-pill ${getDifficultyClass(task.difficulty)}">${task.progress}% Complete</span>
+        ${getDeadlineChip(task.deadline)}
       </div>
       <div class="quest-item-actions">
         <span class="quest-edit-btn" data-edit-id="${task.id}">Edit</span>
@@ -1049,7 +1085,20 @@ function renderBattleState() {
   hpText.textContent = `${battleState.monsterHp} / ${battleState.monsterMaxHp}`;
   battleHpText.textContent = `${battleState.monsterHp} / ${battleState.monsterMaxHp}`;
   playerLevel.textContent = battleState.heroLevel;
+  if (playerCoins) playerCoins.textContent = battleState.coins;
 
+}
+
+function updateStatusBar() {
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const active = tasks.filter((t) => !t.isCompleted);
+  const todayCount = active.filter((t) => t.deadline === todayStr).length;
+  const overdueCount = active.filter((t) => t.deadline < todayStr).length;
+
+  const todayEl = document.getElementById("status-today-count");
+  const overdueEl = document.getElementById("status-overdue-count");
+  if (todayEl) todayEl.textContent = todayCount;
+  if (overdueEl) overdueEl.textContent = overdueCount;
 }
 
 function renderInfoDashboard() {
@@ -1060,6 +1109,7 @@ function renderInfoDashboard() {
   renderProgressHistory();
   applyCurrentMonsterVisuals();
   renderBattleState();
+  updateStatusBar();
 }
 
 function updateHeroAttackOffset() {
@@ -1354,6 +1404,7 @@ async function handleProgressUpdate(event) {
     battleState.xpToLevel = data.playerStats.xpToLevel;
     battleState.heroHp = data.playerStats.heroHp || battleState.heroHp;
     battleState.heroMaxHp = data.playerStats.heroMaxHp || battleState.heroMaxHp;
+    if (data.playerStats.coins != null) battleState.coins = data.playerStats.coins;
 
     // Set up battle state: show HP before damage, then animate
     const battle = data.battle;
@@ -1378,8 +1429,9 @@ async function handleProgressUpdate(event) {
     addLogEntry(battleLog, damageMessage);
 
     if (data.playerStats.leveledUp) {
-      addLogEntry(combatLog, `Level up! Reached level ${data.playerStats.heroLevel}.`);
-      addLogEntry(battleLog, `Power surge. Level ${data.playerStats.heroLevel} unlocked in battle.`);
+      const coinsEarned = data.playerStats.coinsEarned ?? 0;
+      addLogEntry(combatLog, `Level up! Reached level ${data.playerStats.heroLevel}. +${coinsEarned} coins earned.`);
+      addLogEntry(battleLog, `Power surge. Level ${data.playerStats.heroLevel} unlocked in battle. +${coinsEarned} coins.`);
     }
 
     if (data.achievementsUnlocked && data.achievementsUnlocked.length > 0) {
@@ -1472,12 +1524,17 @@ editDifficultyToggle.querySelectorAll(".difficulty-option").forEach((button) => 
 editTaskForm.addEventListener("submit", handleEditSave);
 editCancelBtn.addEventListener("click", closeEditModal);
 editDeleteBtn.addEventListener("click", handleEditDelete);
+shopBtn?.addEventListener("click", () => { window.location.href = "/shop"; });
 achievementsBtn.addEventListener("click", openAchievementsModal);
 achievementsCloseBtn.addEventListener("click", () => { achievementsModal.hidden = true; });
 archiveDetailBtn?.addEventListener("click", openQuestArchiveModal);
 questArchiveCloseBtn?.addEventListener("click", closeQuestArchiveModal);
 questArchiveModal?.addEventListener("click", (e) => {
   if (e.target === questArchiveModal) closeQuestArchiveModal();
+});
+questSearchInput?.addEventListener("input", () => {
+  questSearchQuery = questSearchInput.value;
+  renderTaskList();
 });
 archiveSearchInput?.addEventListener("input", () => {
   if (!questArchiveModal?.hidden) renderQuestArchiveModal();
@@ -1729,6 +1786,7 @@ async function initApp() {
       xpToLevel: statsData.xpToLevel,
       heroHp: statsData.heroHp,
       heroMaxHp: statsData.heroMaxHp,
+      coins: statsData.coins ?? 0,
     });
 
     if (tasks.length > 0) {

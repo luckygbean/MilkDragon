@@ -19,6 +19,10 @@ def create_app():
     def serve_admin():
         return send_from_directory(FRONTEND_DIR, "admin.html")
 
+    @app.route("/shop")
+    def serve_shop():
+        return send_from_directory(FRONTEND_DIR, "shop.html")
+
     @app.route("/<path:path>")
     def serve_static(path):
         if path.startswith("api/"):

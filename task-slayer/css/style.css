@@ -112,7 +112,7 @@ body.battle-mode .page-shell {
 
 .top-bar {
   display: grid;
-  grid-template-columns: 1.2fr 180px 1fr auto;
+  grid-template-columns: 1.2fr 120px 120px 1fr auto;
   gap: 18px;
   align-items: center;
   padding: 22px 26px;
@@ -160,6 +160,7 @@ h1 {
 }
 
 .level-box,
+.coins-box,
 .xp-wrapper,
 .detail-card,
 .summary-meta-card {
@@ -168,8 +169,38 @@ h1 {
   background: rgba(255, 255, 255, 0.035);
 }
 
-.level-box {
+.level-box,
+.coins-box {
   text-align: center;
+}
+
+.coins-icon {
+  display: block;
+  font-size: 1rem;
+  line-height: 1;
+  margin-bottom: 2px;
+  filter: drop-shadow(0 0 6px rgba(247, 207, 109, 0.6));
+}
+
+.coins-value {
+  display: inline-block;
+  margin-top: 4px;
+  font-size: 2.6rem;
+  font-weight: 700;
+  color: var(--gold);
+}
+
+.shop-btn {
+  background: linear-gradient(135deg, #2a1f0a, #4a3510);
+  border: 1px solid rgba(247, 207, 109, 0.4);
+  color: var(--gold);
+  box-shadow: 0 0 12px rgba(247, 207, 109, 0.15);
+  transition: box-shadow 0.2s, border-color 0.2s;
+}
+
+.shop-btn:hover {
+  border-color: rgba(247, 207, 109, 0.8);
+  box-shadow: 0 0 20px rgba(247, 207, 109, 0.35);
 }
 
 .level-label,
@@ -431,11 +462,43 @@ body.battle-mode .scene-stack {
   animation: idleFloat 3s ease-in-out infinite;
 }
 
-.stats-list,
 .info-cards,
 .quest-form,
 .progress-form,
 .progress-history-list,
+.quest-search-wrap {
+  margin-bottom: 12px;
+}
+
+.stats-list {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.quest-search-input {
+  width: 100%;
+  padding: 9px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--panel-border);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-primary);
+  font-family: "Rajdhani", sans-serif;
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.18s, background 0.18s;
+  box-sizing: border-box;
+}
+
+.quest-search-input::placeholder {
+  color: var(--text-muted);
+}
+
+.quest-search-input:focus {
+  border-color: rgba(247, 207, 109, 0.5);
+  background: rgba(255, 255, 255, 0.07);
+}
+
 .active-quest-list {
   display: grid;
   gap: 12px;
@@ -497,14 +560,16 @@ body.battle-mode .scene-stack {
 }
 
 .task-description {
-  margin: 22px 0 0;
+  margin: 32px 0 0;
   font-size: 1.2rem;
   line-height: 1.45;
 }
 
 .info-cards {
+  display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  margin-top: 24px;
+  margin-top: 32px;
+  gap: 12px;
 }
 
 .wide-card {
@@ -762,6 +827,18 @@ body.battle-mode .scene-stack {
 .progress-pill.hard {
   background: rgba(255, 125, 125, 0.12);
   color: var(--hard);
+}
+
+.quest-pill.deadline-warning {
+  background: rgba(247, 207, 109, 0.12);
+  color: var(--gold);
+  font-weight: 700;
+}
+
+.quest-pill.deadline-expired {
+  background: rgba(255, 107, 107, 0.12);
+  color: var(--red);
+  font-weight: 700;
 }
 
 .quest-deadline-badge {
@@ -1939,7 +2016,8 @@ input[type="range"] {
   font-size: 0.95rem;
 }
 
-.achievements-btn {
+.achievements-btn,
+.shop-btn {
   font-size: 0.9rem !important;
   padding: 12px 22px !important;
 }
@@ -2357,4 +2435,65 @@ input[type="range"] {
   border: 1px solid rgba(247, 207, 109, 0.35) !important;
   color: var(--gold) !important;
   box-shadow: none !important;
+}
+
+/* ── Bottom-right status bar ── */
+.status-bar {
+  position: fixed;
+  bottom: 20px;
+  right: 24px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 20px;
+  border-radius: 999px;
+  background: rgba(9, 18, 36, 0.88);
+  border: 1px solid var(--panel-border);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.45);
+  font-size: 0.88rem;
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  z-index: 800;
+  pointer-events: none;
+  transition: opacity 0.3s;
+}
+
+.status-bar-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  white-space: nowrap;
+}
+
+.status-bar-item strong {
+  color: var(--text-primary);
+}
+
+.status-bar-item-danger strong {
+  color: var(--red);
+}
+
+.status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.status-dot-gold {
+  background: var(--gold);
+  box-shadow: 0 0 6px rgba(247, 207, 109, 0.7);
+}
+
+.status-dot-red {
+  background: var(--red);
+  box-shadow: 0 0 6px rgba(255, 107, 107, 0.7);
+}
+
+.status-bar-divider {
+  color: var(--panel-border);
+  font-weight: 400;
 }
