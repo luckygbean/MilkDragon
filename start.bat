@@ -15,7 +15,7 @@ echo [MilkDragon] 启动后端（独立窗口）...
 start "MilkDragon 后端" /D "%~dp0backend" cmd /k python app.py
 
 echo [MilkDragon] 等待服务启动...
-timeout /t 2 /nobreak >nul
+timeout /t 3 /nobreak >nul
 
-start "" "%~dp0task-slayer\index.html"
+start "" "http://127.0.0.1:5000"
 echo 已尝试打开前端。停止服务请关闭标题为「MilkDragon 后端」的命令行窗口。
