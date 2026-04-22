@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}17个目标 - SDG Project{% endblock %}
+
+{% block content %}
+<section class="section">
+    <div class="container">
+        <h1 class="page-title">联合国可持续发展目标</h1>
+        <p class="page-subtitle">17 个目标，共同构建可持续的未来</p>
+        <div class="goals-grid">
+            {% for goal in goals %}
+            <div class="goal-card" style="border-top: 4px solid {{ goal.color }}">
+                <div class="goal-icon">{{ goal.icon }}</div>
+                <div class="goal-number" style="color: {{ goal.color }}">SDG {{ goal.id }}</div>
+                <div class="goal-title">{{ goal.title }}</div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}

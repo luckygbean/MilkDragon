@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}首页 - SDG Project{% endblock %}
+
+{% block content %}
+<section class="hero">
+    <div class="hero-content">
+        <h1>可持续发展目标</h1>
+        <p class="hero-subtitle">Sustainable Development Goals</p>
+        <p class="hero-desc">共同行动，为 2030 年更美好的世界而努力</p>
+        <a href="{{ url_for('main.goals') }}" class="btn-primary">探索 17 个目标</a>
+    </div>
+</section>
+
+<section class="intro section">
+    <div class="container">
+        <h2>什么是 SDG？</h2>
+        <p>2015 年，联合国 193 个成员国通过了《2030 年可持续发展议程》，提出了 17 个可持续发展目标（SDGs），涵盖消除贫困、保护地球、确保人人享有和平与繁荣。</p>
+        <div class="card-grid">
+            <div class="card">
+                <span class="card-icon">🎯</span>
+                <h3>17 个目标</h3>
+                <p>覆盖社会、经济、环境三大维度</p>
+            </div>
+            <div class="card">
+                <span class="card-icon">📅</span>
+                <h3>2030 截止日期</h3>
+                <p>全球携手在 2030 年前实现目标</p>
+            </div>
+            <div class="card">
+                <span class="card-icon">🌐</span>
+                <h3>193 个国家</h3>
+                <p>联合国全体成员国共同承诺</p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
