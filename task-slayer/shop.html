@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Task Slayer — Shop</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Rajdhani:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./css/style.css">
+  <style>
+    /* ── Shop-specific overrides ── */
+    .shop-page {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 32px 16px 60px;
+    }
+
+    .shop-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    .shop-header-left {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .shop-back-btn {
+      font-size: 0.9rem;
+      padding: 8px 16px;
+      white-space: nowrap;
+    }
+
+    .shop-title-block p {
+      margin: 0 0 4px;
+    }
+
+    .shop-title-block h1 {
+      font-size: clamp(1.6rem, 4vw, 2.6rem);
+    }
+
+    .shop-wallet {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 22px;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.035);
+      border: 1px solid rgba(247, 207, 109, 0.25);
+    }
+
+    .shop-wallet-icon {
+      font-size: 1.8rem;
+      filter: drop-shadow(0 0 6px rgba(247, 207, 109, 0.5));
+    }
+
+    .shop-wallet-label {
+      display: block;
+      font-size: 0.8rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .shop-wallet-amount {
+      display: block;
+      font-size: 1.5rem;
+      font-weight: 700;
+      font-family: "Cinzel", serif;
+      color: var(--gold);
+    }
+
+    /* ── Category tabs ── */
+    .shop-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 28px;
+      flex-wrap: wrap;
+    }
+
+    .shop-tab {
+      padding: 8px 20px;
+      border-radius: 999px;
+      border: 1px solid var(--panel-border);
+      background: transparent;
+      color: var(--text-muted);
+      font-family: "Rajdhani", sans-serif;
+      font-size: 0.95rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      cursor: pointer;
+      transition: background 0.18s, color 0.18s, border-color 0.18s;
+    }
+
+    .shop-tab.active,
+    .shop-tab:hover {
+      background: rgba(247, 207, 109, 0.12);
+      border-color: rgba(247, 207, 109, 0.5);
+      color: var(--gold);
+    }
+
+    /* ── Item grid ── */
+    .shop-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 20px;
+    }
+
+    .shop-item {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      border: 1px solid var(--panel-border);
+      border-radius: 20px;
+      background: linear-gradient(180deg, rgba(18, 31, 60, 0.96), rgba(9, 14, 29, 0.98));
+      overflow: hidden;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .shop-item:hover {
+      border-color: rgba(247, 207, 109, 0.4);
+      box-shadow: 0 0 24px rgba(247, 207, 109, 0.1);
+    }
+
+    .shop-item.owned {
+      border-color: rgba(109, 247, 186, 0.35);
+    }
+
+    .shop-item.equipped {
+      border-color: rgba(109, 247, 186, 0.7);
+      box-shadow: 0 0 20px rgba(109, 247, 186, 0.15);
+    }
+
+    .shop-item-preview {
+      height: 140px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 4rem;
+      background: rgba(255, 255, 255, 0.025);
+      border-bottom: 1px solid var(--panel-border);
+      position: relative;
+    }
+
+    .shop-item-badge {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .badge-owned {
+      background: rgba(109, 247, 186, 0.18);
+      color: var(--green);
+      border: 1px solid rgba(109, 247, 186, 0.4);
+    }
+
+    .badge-equipped {
+      background: rgba(109, 247, 186, 0.3);
+      color: var(--green);
+      border: 1px solid rgba(109, 247, 186, 0.6);
+    }
+
+    .badge-new {
+      background: rgba(247, 207, 109, 0.2);
+      color: var(--gold);
+      border: 1px solid rgba(247, 207, 109, 0.5);
+    }
+
+    .shop-item-body {
+      padding: 16px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .shop-item-category {
+      font-size: 0.75rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .shop-item-name {
+      font-family: "Cinzel", serif;
+      font-size: 1rem;
+      color: var(--text-primary);
+      margin: 0;
+    }
+
+    .shop-item-desc {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+      flex: 1;
+    }
+
+    .shop-item-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      border-top: 1px solid var(--panel-border);
+      gap: 10px;
+    }
+
+    .shop-item-price {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 1rem;
+      font-weight: 700;
+      font-family: "Cinzel", serif;
+      color: var(--gold);
+    }
+
+    .shop-item-price .price-icon {
+      font-size: 1.1rem;
+    }
+
+    .shop-item-price.free {
+      color: var(--green);
+    }
+
+    .shop-buy-btn {
+      padding: 7px 16px;
+      font-size: 0.88rem;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      font-family: "Rajdhani", sans-serif;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      transition: opacity 0.18s, box-shadow 0.18s;
+      background: linear-gradient(135deg, var(--button-top), var(--button-bottom));
+      color: #1a0f00;
+    }
+
+    .shop-buy-btn:hover:not(:disabled) {
+      box-shadow: 0 0 16px rgba(247, 207, 109, 0.4);
+    }
+
+    .shop-buy-btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .shop-buy-btn.btn-equip {
+      background: linear-gradient(135deg, #6df7ba, #2da870);
+      color: #052015;
+    }
+
+    .shop-buy-btn.btn-equipped {
+      background: rgba(109, 247, 186, 0.12);
+      color: var(--green);
+      border: 1px solid rgba(109, 247, 186, 0.4);
+      cursor: default;
+    }
+
+    /* ── Toast notification ── */
+    .shop-toast {
+      position: fixed;
+      bottom: 32px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      padding: 12px 28px;
+      border-radius: 12px;
+      background: rgba(14, 23, 45, 0.97);
+      border: 1px solid var(--panel-border);
+      color: var(--text-primary);
+      font-size: 0.95rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      opacity: 0;
+      transition: opacity 0.25s, transform 0.25s;
+      pointer-events: none;
+      z-index: 9999;
+      white-space: nowrap;
+    }
+
+    .shop-toast.visible {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* ── Empty state ── */
+    .shop-empty {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-muted);
+      font-size: 1rem;
+    }
+
+    .shop-empty .empty-icon {
+      font-size: 3rem;
+      margin-bottom: 16px;
+      display: block;
+    }
+
+    @media (max-width: 600px) {
+      .shop-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .shop-grid {
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-shell shop-page">
+
+    <div class="shop-header">
+      <div class="shop-header-left">
+        <button class="action-button cancel-quest-btn shop-back-btn" id="back-btn" type="button">&#9666; Back</button>
+        <div class="shop-title-block">
+          <p class="eyebrow">Dungeon Market</p>
+          <h1>Item Shop</h1>
+        </div>
+      </div>
+      <div class="shop-wallet">
+        <span class="shop-wallet-icon">&#9775;</span>
+        <div>
+          <span class="shop-wallet-label">Your Coins</span>
+          <span class="shop-wallet-amount" id="wallet-amount">—</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="shop-tabs" id="shop-tabs">
+      <button class="shop-tab active" data-category="all">All</button>
+      <button class="shop-tab" data-category="skin">Hero Skins</button>
+      <button class="shop-tab" data-category="title">Titles</button>
+      <button class="shop-tab" data-category="effect">Effects</button>
+    </div>
+
+    <div class="shop-grid" id="shop-grid"></div>
+
+  </div>
+
+  <div class="shop-toast" id="shop-toast"></div>
+
+  <script>
+    const API_BASE = window.location.protocol === "file:"
+      ? "http://127.0.0.1:5000/api"
+      : "/api";
+
+    const SHOP_ITEMS = [
+      // Hero Skins
+      {
+        id: "skin_shadow",
+        name: "Shadow Knight",
+        category: "skin",
+        icon: "🌑",
+        desc: "A hero cloaked in darkness. Feared by all who stand in its path.",
+        price: 150,
+        badge: "new",
+      },
+      {
+        id: "skin_gold",
+        name: "Gilded Champion",
+        category: "skin",
+        icon: "✨",
+        desc: "Armour forged from quest rewards and sheer willpower.",
+        price: 300,
+      },
+      {
+        id: "skin_frost",
+        name: "Frost Warden",
+        category: "skin",
+        icon: "❄️",
+        desc: "Born from the coldest dungeon. Deadlines fear the chill.",
+        price: 250,
+      },
+      {
+        id: "skin_crimson",
+        name: "Crimson Berserker",
+        category: "skin",
+        icon: "🔴",
+        desc: "The more tasks pile up, the stronger this hero becomes.",
+        price: 400,
+        badge: "new",
+      },
+      // Titles
+      {
+        id: "title_slayer",
+        name: "The Slayer",
+        category: "title",
+        icon: "⚔️",
+        desc: "Displayed next to your hero name. Strike fear into procrastination.",
+        price: 100,
+      },
+      {
+        id: "title_legend",
+        name: "Legend",
+        category: "title",
+        icon: "👑",
+        desc: "Only the most consistent task-completers dare to wear this.",
+        price: 500,
+      },
+      {
+        id: "title_grinder",
+        name: "The Grinder",
+        category: "title",
+        icon: "⚙️",
+        desc: "No rest. No excuses. Just quests.",
+        price: 200,
+      },
+      // Effects
+      {
+        id: "effect_xp_boost",
+        name: "XP Aura",
+        category: "effect",
+        icon: "⚡",
+        desc: "A glowing aura surrounds your hero during battle. Purely cosmetic, purely cool.",
+        price: 180,
+      },
+      {
+        id: "effect_gold_trail",
+        name: "Gold Trail",
+        category: "effect",
+        icon: "🌟",
+        desc: "Coin particles follow your hero's every move in the dungeon.",
+        price: 220,
+        badge: "new",
+      },
+      {
+        id: "effect_fire",
+        name: "Flame Step",
+        category: "effect",
+        icon: "🔥",
+        desc: "Each attack leaves embers behind. The dungeon floor will never forget.",
+        price: 350,
+      },
+    ];
+
+    let coins = 0;
+    let ownedItems = new Set(JSON.parse(localStorage.getItem("shop_owned") || "[]"));
+    let equippedItems = new Set(JSON.parse(localStorage.getItem("shop_equipped") || "[]"));
+    let activeCategory = "all";
+
+    const walletEl = document.getElementById("wallet-amount");
+    const gridEl = document.getElementById("shop-grid");
+    const toastEl = document.getElementById("shop-toast");
+    let toastTimer = null;
+
+    function showToast(msg, isError = false) {
+      toastEl.textContent = msg;
+      toastEl.style.borderColor = isError ? "rgba(255,107,107,0.5)" : "rgba(247,207,109,0.4)";
+      toastEl.classList.add("visible");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toastEl.classList.remove("visible"), 2800);
+    }
+
+    function saveStorage() {
+      localStorage.setItem("shop_owned", JSON.stringify([...ownedItems]));
+      localStorage.setItem("shop_equipped", JSON.stringify([...equippedItems]));
+    }
+
+    function renderGrid() {
+      const filtered = activeCategory === "all"
+        ? SHOP_ITEMS
+        : SHOP_ITEMS.filter((i) => i.category === activeCategory);
+
+      gridEl.innerHTML = "";
+
+      if (filtered.length === 0) {
+        gridEl.innerHTML = `<div class="shop-empty"><span class="empty-icon">🏚️</span>No items in this category yet.</div>`;
+        return;
+      }
+
+      filtered.forEach((item) => {
+        const owned = ownedItems.has(item.id);
+        const equipped = equippedItems.has(item.id);
+        const canAfford = coins >= item.price;
+
+        let badgeHtml = "";
+        if (equipped) {
+          badgeHtml = `<span class="shop-item-badge badge-equipped">Equipped</span>`;
+        } else if (owned) {
+          badgeHtml = `<span class="shop-item-badge badge-owned">Owned</span>`;
+        } else if (item.badge === "new") {
+          badgeHtml = `<span class="shop-item-badge badge-new">New</span>`;
+        }
+
+        let footerBtn = "";
+        if (equipped) {
+          footerBtn = `<button class="shop-buy-btn btn-equipped" disabled>Equipped</button>`;
+        } else if (owned) {
+          footerBtn = `<button class="shop-buy-btn btn-equip" data-id="${item.id}" data-action="equip">Equip</button>`;
+        } else {
+          footerBtn = `<button class="shop-buy-btn" data-id="${item.id}" data-action="buy" ${canAfford ? "" : "disabled"}>Buy</button>`;
+        }
+
+        const card = document.createElement("div");
+        card.className = `shop-item${owned ? " owned" : ""}${equipped ? " equipped" : ""}`;
+        card.innerHTML = `
+          <div class="shop-item-preview">
+            ${item.icon}
+            ${badgeHtml}
+          </div>
+          <div class="shop-item-body">
+            <span class="shop-item-category">${item.category}</span>
+            <h3 class="shop-item-name">${item.name}</h3>
+            <p class="shop-item-desc">${item.desc}</p>
+          </div>
+          <div class="shop-item-footer">
+            <div class="shop-item-price${owned ? " free" : ""}">
+              ${owned ? "✔" : '<span class="price-icon">⚙</span>'}
+              ${owned ? "Owned" : item.price + " coins"}
+            </div>
+            ${footerBtn}
+          </div>
+        `;
+        gridEl.appendChild(card);
+      });
+
+      // Button events
+      gridEl.querySelectorAll("[data-action='buy']").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const id = btn.dataset.id;
+          const item = SHOP_ITEMS.find((i) => i.id === id);
+          if (!item) return;
+          if (coins < item.price) {
+            showToast("Not enough coins.", true);
+            return;
+          }
+          coins -= item.price;
+          ownedItems.add(id);
+          saveStorage();
+          updateWalletOnServer();
+          walletEl.textContent = coins;
+          showToast(`Purchased: ${item.name}!`);
+          renderGrid();
+        });
+      });
+
+      gridEl.querySelectorAll("[data-action='equip']").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const id = btn.dataset.id;
+          const item = SHOP_ITEMS.find((i) => i.id === id);
+          if (!item) return;
+          // Unequip any other item in the same category
+          SHOP_ITEMS.forEach((i) => {
+            if (i.category === item.category) equippedItems.delete(i.id);
+          });
+          equippedItems.add(id);
+          saveStorage();
+          showToast(`Equipped: ${item.name}!`);
+          renderGrid();
+        });
+      });
+    }
+
+    async function updateWalletOnServer() {
+      // Spending coins: POST to backend (backend route to be implemented)
+      // For now we store locally; server coins are the source of truth on load
+      try {
+        await fetch(`${API_BASE}/player/spend-coins`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ amount: 0 }), // placeholder
+        });
+      } catch (_) {}
+    }
+
+    async function loadCoins() {
+      try {
+        const res = await fetch(`${API_BASE}/player/stats`, {
+          credentials: "include",
+        });
+        if (!res.ok) throw new Error("not logged in");
+        const data = await res.json();
+        coins = data.coins ?? 0;
+        walletEl.textContent = coins;
+      } catch (_) {
+        walletEl.textContent = "0";
+        coins = 0;
+      }
+    }
+
+    // Tab switching
+    document.getElementById("shop-tabs").addEventListener("click", (e) => {
+      const tab = e.target.closest(".shop-tab");
+      if (!tab) return;
+      document.querySelectorAll(".shop-tab").forEach((t) => t.classList.remove("active"));
+      tab.classList.add("active");
+      activeCategory = tab.dataset.category;
+      renderGrid();
+    });
+
+    // Back button
+    document.getElementById("back-btn").addEventListener("click", () => {
+      window.location.href = "/";
+    });
+
+    // Init
+    loadCoins().then(() => renderGrid());
+  </script>
+</body>
+</html>
