@@ -52,4 +52,5 @@ def create_app():
 
 if __name__ == "__main__":
     app = create_app()
-    app.run(debug=True, port=5000, use_reloader=False)
+    debug = os.environ.get("FLASK_DEBUG", "false").lower() == "true"
+    app.run(host="0.0.0.0", debug=debug, port=5000, use_reloader=False)

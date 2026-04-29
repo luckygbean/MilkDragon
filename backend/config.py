@@ -2,8 +2,8 @@ import os
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
-DATABASE = os.path.join(BASE_DIR, "task_slayer.db")
-SECRET_KEY = "dev-secret-key-change-in-production"
+DATABASE = os.environ.get("DATABASE", os.path.join(BASE_DIR, "task_slayer.db"))
+SECRET_KEY = os.environ.get("SECRET_KEY", "dev-secret-key-change-in-production")
 
 SESSION_COOKIE_SAMESITE = "Lax"
 SESSION_COOKIE_HTTPONLY = True

@@ -1,0 +1,16 @@
+.git
+.gitignore
+.idea
+.venv
+__pycache__
+*.pyc
+*.pyo
+*.db
+data/
+backend/nul
+nul
+README.md
+start.bat
+routes/
+static/
+templates/

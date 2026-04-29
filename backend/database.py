@@ -2,7 +2,7 @@ import sqlite3
 import os
 from flask import g
 
-DATABASE = os.path.join(os.path.abspath(os.path.dirname(__file__)), "task_slayer.db")
+DATABASE = os.environ.get("DATABASE", os.path.join(os.path.abspath(os.path.dirname(__file__)), "task_slayer.db"))
 
 
 def get_db():
@@ -21,6 +21,7 @@ def close_db(e=None):
 
 def init_db(app):
     with app.app_context():
+        os.makedirs(os.path.dirname(DATABASE), exist_ok=True)
         db = sqlite3.connect(DATABASE)
         db.row_factory = sqlite3.Row
         schema_path = os.path.join(os.path.dirname(__file__), "schema.sql")
