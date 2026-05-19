@@ -304,6 +304,16 @@ loginBtn?.addEventListener("click", () => {
   if (authModal) authModal.style.display = "flex";
 });
 
+// Chart button opens statistics modal
+const chartBtn = document.getElementById("chart-btn");
+let chartComponent = null;
+chartBtn?.addEventListener("click", () => {
+  if (!chartComponent) {
+    chartComponent = new ChartComponent('chart-container');
+  }
+  chartComponent.open();
+});
+
 // Auth modal close button - just hides the modal, banner stays
 document.getElementById("auth-modal-close")?.addEventListener("click", () => {
   if (authModal) authModal.style.display = "none";
@@ -1771,10 +1781,16 @@ async function initApp() {
     isLoggedIn = true;
     if (authModal) authModal.style.display = "none";
 
-    // Get current username for header
+    // Get current username for header and check admin status
     try {
       const meData = await api("/auth/me");
       if (headerUsername) headerUsername.textContent = meData.username || "";
+
+      // Show/hide Statistics button based on admin status
+      const chartBtn = document.getElementById('chart-btn');
+      if (chartBtn) {
+        chartBtn.style.display = meData.is_admin ? 'inline-block' : 'none';
+      }
     } catch (_) {}
 
     tasks = taskData.tasks;

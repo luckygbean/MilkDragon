@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Rajdhani:wght@400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./css/style.css">
+  <link rel="stylesheet" href="./css/chart.css">
 </head>
 <body>
   <div class="page-shell">
@@ -137,6 +138,7 @@
             <button class="action-button tutorial-btn" id="tutorial-btn" type="button">How to Play</button>
             <button class="action-button shop-btn" id="shop-btn" type="button">&#9775; Shop</button>
             <button class="action-button achievements-btn" id="achievements-btn" type="button">Achievements</button>
+            <button class="action-button chart-btn" id="chart-btn" type="button" style="display: none;">&#128200; Statistics</button>
           </div>
         </div>
 
@@ -594,6 +596,17 @@
       </div>
     </div>
 
+    <!-- ── Chart Modal ── -->
+    <div class="modal-overlay" id="chart-modal" hidden>
+      <div class="modal-card chart-modal-card">
+        <div class="chart-modal-header">
+          <h2 class="modal-title">Statistics</h2>
+          <button class="action-button cancel-quest-btn chart-close-btn" type="button" id="chart-close-btn">Close</button>
+        </div>
+        <div class="chart-modal-content" id="chart-container"></div>
+      </div>
+    </div>
+
     <!-- ── Tutorial Overlay ── -->
     <div id="tutorial-overlay" class="tutorial-overlay" hidden>
       <!-- Dark backdrop with spotlight cutout -->
@@ -628,5 +641,6 @@
   </div>
 
   <script src="./js/battle.js"></script>
+  <script src="./js/chart.js"></script>
 </body>
 </html>
