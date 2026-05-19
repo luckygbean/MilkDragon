@@ -304,6 +304,16 @@ loginBtn?.addEventListener("click", () => {
   if (authModal) authModal.style.display = "flex";
 });
 
+// Chart button opens statistics modal
+const chartBtn = document.getElementById("chart-btn");
+let chartComponent = null;
+chartBtn?.addEventListener("click", () => {
+  if (!chartComponent) {
+    chartComponent = new ChartComponent('chart-container');
+  }
+  chartComponent.open();
+});
+
 // Auth modal close button - just hides the modal, banner stays
 document.getElementById("auth-modal-close")?.addEventListener("click", () => {
   if (authModal) authModal.style.display = "none";

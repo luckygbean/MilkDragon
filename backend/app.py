@@ -23,12 +23,27 @@ def create_app():
     def serve_shop():
         return send_from_directory(FRONTEND_DIR, "shop.html")
 
+    @app.route("/chart")
+    def serve_chart():
+        return send_from_directory(os.path.dirname(__file__) + "/..", "chart-demo.html")
+
     @app.route("/<path:path>")
     def serve_static(path):
         if path.startswith("api/"):
             from flask import abort
             abort(404)
-        return send_from_directory(FRONTEND_DIR, path)
+        
+        # First try to serve from task-slayer directory
+        frontend_path = os.path.join(FRONTEND_DIR, path)
+        if os.path.exists(frontend_path):
+            return send_from_directory(FRONTEND_DIR, path)
+        
+        # If not found, try to serve from root static directory
+        if path.startswith("static/"):
+            return send_from_directory(os.path.dirname(__file__) + "/..", path)
+        
+        from flask import abort
+        abort(404)
 
     init_db(app)
     app.teardown_appcontext(close_db)
