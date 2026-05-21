@@ -751,6 +751,8 @@ class ChartComponent {
       ],
       total: 100
     };
+  }
+
   getGenderData() {
     return [
       { name: 'Male', value: 65, color: '#1890ff' },
