@@ -2017,7 +2017,8 @@ input[type="range"] {
 }
 
 .achievements-btn,
-.shop-btn {
+.shop-btn,
+.chart-btn {
   font-size: 0.9rem !important;
   padding: 12px 22px !important;
 }

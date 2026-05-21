@@ -9,7 +9,7 @@ FRONTEND_DIR = os.path.join(os.path.dirname(__file__), "..", "task-slayer")
 def create_app():
     app = Flask(__name__)
     app.config.from_pyfile("config.py")
-    CORS(app, supports_credentials=True, origins="*")
+    CORS(app, supports_credentials=True, origins=["http://localhost:5000", "http://127.0.0.1:5000"])
 
     init_db(app)
     app.teardown_appcontext(close_db)

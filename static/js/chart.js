@@ -173,7 +173,7 @@ class ChartComponent {
     const yMax = Math.ceil(maxValue / 10) * 10;
     const pointGap = chartWidth / (data.dates.length - 1);
     
-    this.drawYAxis(chartHeight, yMax, 'Active Users');
+    this.drawYAxis(chartHeight, yMax, 'Created Quests');
     this.drawXAxis(data.dates, chartHeight);
     
     const points = data.dates.map((date, index) => ({
@@ -674,7 +674,7 @@ class ChartComponent {
       }
       case 'line': {
         const data = this.getActiveData();
-        tooltipContent = `Date: ${data.dates[this.hoveredIndex]}<br>Active Users: ${data.counts[this.hoveredIndex]}`;
+        tooltipContent = `Date: ${data.dates[this.hoveredIndex]}<br>Created Quests: ${data.counts[this.hoveredIndex]}`;
         break;
       }
       case 'pie': {
