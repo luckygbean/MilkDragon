@@ -9,7 +9,7 @@ FRONTEND_DIR = os.path.join(os.path.dirname(__file__), "..", "task-slayer")
 def create_app():
     app = Flask(__name__)
     app.config.from_pyfile("config.py")
-    CORS(app, supports_credentials=True, origins=["http://127.0.0.1:5500", "http://127.0.0.1:5000"])
+    CORS(app, supports_credentials=True, origins="*")
 
     init_db(app)
     app.teardown_appcontext(close_db)
@@ -48,6 +48,10 @@ def create_app():
 
     @app.route("/<path:path>")
     def serve_static(path):
+        if path.startswith("api/"):
+            from flask import abort
+            abort(404)
+        
         # First try to serve from task-slayer directory
         frontend_path = os.path.join(FRONTEND_DIR, path)
         if os.path.exists(frontend_path):

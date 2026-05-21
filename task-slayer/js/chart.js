@@ -162,12 +162,12 @@ class ChartComponent {
   generateMockLevelDistributionData() {
     return {
       categories: [
-        { name: "Novice Knight", count: 45 },
-        { name: "Veteran Warrior", count: 30 },
-        { name: "Elite Fighter", count: 15 },
-        { name: "Legendary Hero", count: 10 }
+        { name: "Novice Knight", count: 15 },
+        { name: "Veteran Warrior", count: 4 },
+        { name: "Elite Fighter", count: 6 },
+        { name: "Legendary Hero", count: 3 }
       ],
-      total: 100
+      total: 28
     };
   }
 
@@ -186,7 +186,6 @@ class ChartComponent {
     this.canvas = document.createElement('canvas');
     this.ctx = this.canvas.getContext('2d');
     
-    // Set default size in case container has no size yet
     this.width = 800;
     this.height = 450;
     this.canvas.width = this.width;
@@ -576,6 +575,7 @@ class ChartComponent {
     this.ctx.font = '12px sans-serif';
     this.ctx.fillText('Players', centerX, centerY + 10);
 
+    this.drawLevelLegend();
     this.drawTitle('Player Level Distribution');
   }
 
@@ -608,7 +608,42 @@ class ChartComponent {
     this.ctx.setLineDash([]);
   }
 
-  
+  drawLevelLegend() {
+    const legendX = this.width - this.padding.right - 150;
+    const legendY = this.padding.top + 60;
+    const itemHeight = 28;
+    const boxSize = 16;
+
+    const levels = [
+      { name: 'Novice Knight', color: '#f5a623', range: 'Lv 0-5' },
+      { name: 'Veteran Warrior', color: '#e0e0e0', range: 'Lv 6-50' },
+      { name: 'Elite Fighter', color: '#5dade2', range: 'Lv 51-75' },
+      { name: 'Legendary Hero', color: '#ffd700', range: 'Lv 76+' }
+    ];
+
+    this.ctx.font = 'bold 12px sans-serif';
+    this.ctx.fillStyle = '#f4d03f';
+    this.ctx.textAlign = 'left';
+    this.ctx.fillText('Level Distribution:', legendX, legendY - 15);
+
+    levels.forEach((level, index) => {
+      const y = legendY + index * itemHeight;
+
+      this.ctx.beginPath();
+      this.ctx.roundRect(legendX, y - 8, boxSize, boxSize, 3);
+      this.ctx.fillStyle = level.color;
+      this.ctx.fill();
+
+      this.ctx.fillStyle = '#ffffff';
+      this.ctx.font = '11px sans-serif';
+      this.ctx.textAlign = 'left';
+      this.ctx.fillText(level.name, legendX + 20, y + 3);
+
+      this.ctx.fillStyle = '#888888';
+      this.ctx.font = '9px sans-serif';
+      this.ctx.fillText(level.range, legendX + 20, y + 15);
+    });
+  }
 
   drawYAxis(chartHeight, yMax, label) {
     const ySteps = 5;
@@ -681,67 +716,6 @@ class ChartComponent {
     this.ctx.font = 'bold 18px sans-serif';
     this.ctx.textAlign = 'center';
     this.ctx.fillText(title, this.width / 2, 30);
-  }
-
-  drawLevelLegend() {
-    const legendX = this.width - this.padding.right;
-    const legendY = this.padding.top + 50;
-    const itemHeight = 25;
-    const boxSize = 16;
-
-    const levels = [
-      { name: 'Novice Knight', color: '#f5a623', range: 'Lv 0-5' },
-      { name: 'Veteran Warrior', color: '#e0e0e0', range: 'Lv 6-50' },
-      { name: 'Elite Fighter', color: '#5dade2', range: 'Lv 51-75' },
-      { name: 'Legendary Hero', color: '#ffd700', range: 'Lv 76+' }
-    ];
-
-    this.ctx.font = 'bold 12px sans-serif';
-    this.ctx.fillStyle = '#f4d03f';
-    this.ctx.textAlign = 'right';
-    this.ctx.fillText('Level Distribution:', legendX - 10, legendY - 10);
-
-    levels.forEach((level, index) => {
-      const y = legendY + index * itemHeight;
-
-      this.ctx.beginPath();
-      this.ctx.roundRect(legendX - 20, y - 8, boxSize, boxSize, 3);
-      this.ctx.fillStyle = level.color;
-      this.ctx.fill();
-
-      this.ctx.fillStyle = '#ffffff';
-      this.ctx.font = '11px sans-serif';
-      this.ctx.textAlign = 'right';
-      this.ctx.fillText(level.name, legendX - 30, y + 3);
-
-      this.ctx.fillStyle = '#888888';
-      this.ctx.font = '9px sans-serif';
-      this.ctx.fillText(level.range, legendX - 30, y + 15);
-    });
-  }
-
-  roundRect(x, y, width, height, radius) {
-    this.ctx.beginPath();
-    this.ctx.moveTo(x + radius, y);
-    this.ctx.lineTo(x + width - radius, y);
-    this.ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
-    this.ctx.lineTo(x + width, y + height - radius);
-    this.ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
-    this.ctx.lineTo(x + radius, y + height);
-    this.ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
-    this.ctx.lineTo(x, y + radius);
-    this.ctx.quadraticCurveTo(x, y, x + radius, y);
-    this.ctx.closePath();
-    this.ctx.fill();
-  }
-
-  lightenColor(color, percent) {
-    const num = parseInt(color.replace('#', ''), 16);
-    const amt = Math.round(2.55 * percent);
-    const R = Math.min(255, (num >> 16) + amt);
-    const G = Math.min(255, ((num >> 8) & 0x00FF) + amt);
-    const B = Math.min(255, (num & 0x0000FF) + amt);
-    return `#${(0x1000000 + R * 0x10000 + G * 0x100 + B).toString(16).slice(1)}`;
   }
 
   getHoveredIndex() {
@@ -907,7 +881,6 @@ class ChartComponent {
         tooltipY = this.mousePosition.y - 10;
         break;
       }
-
     }
     
     if (tooltipX + 150 > this.width) {
@@ -924,7 +897,7 @@ class ChartComponent {
     }
     
     this.ctx.fillStyle = 'rgba(244, 208, 63, 0.9)';
-    this.ctx.roundRect(tooltipX, tooltipY, 150, 60, 6);
+    this.roundRect(tooltipX, tooltipY, 150, 60, 6);
     this.ctx.fill();
     
     this.ctx.fillStyle = '#000000';
@@ -985,4 +958,17 @@ class ChartComponent {
     return { dates, counts };
   }
 
+  roundRect(x, y, width, height, radius) {
+    this.ctx.beginPath();
+    this.ctx.moveTo(x + radius, y);
+    this.ctx.lineTo(x + width - radius, y);
+    this.ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+    this.ctx.lineTo(x + width, y + height - radius);
+    this.ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+    this.ctx.lineTo(x + radius, y + height);
+    this.ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+    this.ctx.lineTo(x, y + radius);
+    this.ctx.quadraticCurveTo(x, y, x + radius, y);
+    this.ctx.closePath();
   }
+}

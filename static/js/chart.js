@@ -161,6 +161,7 @@ class ChartComponent {
     });
     
     this.drawTitle('User Registration Statistics (Last 14 Days)');
+    this.drawTitle('User Registration Statistics (Last 30 Days)');
   }
 
   renderLineChart() {
@@ -274,6 +275,7 @@ class ChartComponent {
       this.ctx.font = '9px sans-serif';
       this.ctx.fillText(level.range, legendX - 30, y + 15);
     });
+    this.drawTitle('User Activity Statistics (Last 30 Days)');
   }
 
   drawTrendLine(counts, chartWidth, chartHeight, yMax) {
@@ -324,6 +326,21 @@ class ChartComponent {
       const isHovered = this.hoveredIndex === index;
       const drawRadius = isHovered ? radius + 10 : radius;
 
+    const data = this.getGenderData();
+    const centerX = this.width / 2;
+    const centerY = (this.height + 50) / 2;
+    const radius = Math.min(this.width, this.height) / 3;
+    
+    let startAngle = -Math.PI / 2;
+    const total = data.reduce((sum, item) => sum + item.value, 0);
+    
+    data.forEach((item, index) => {
+      const sliceAngle = (item.value / total) * Math.PI * 2 * this.animationProgress;
+      const endAngle = startAngle + sliceAngle;
+      
+      const isHovered = this.hoveredIndex === index;
+      const drawRadius = isHovered ? radius + 10 : radius;
+      
       this.ctx.beginPath();
       this.ctx.moveTo(centerX, centerY);
       this.ctx.arc(centerX, centerY, drawRadius, startAngle, endAngle);
@@ -340,6 +357,22 @@ class ChartComponent {
       const labelY = centerY + Math.sin(midAngle) * (drawRadius * 0.7);
 
       const percentage = total > 0 ? ((item.count / total) * 100).toFixed(1) : 0;
+      
+      const gradient = this.ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, drawRadius);
+      gradient.addColorStop(0, this.lightenColor(item.color, 30));
+      gradient.addColorStop(1, item.color);
+      this.ctx.fillStyle = gradient;
+      
+      this.ctx.shadowColor = isHovered ? item.color : 'transparent';
+      this.ctx.shadowBlur = isHovered ? 15 : 0;
+      this.ctx.fill();
+      this.ctx.shadowBlur = 0;
+      
+      const midAngle = startAngle + sliceAngle / 2;
+      const labelX = centerX + Math.cos(midAngle) * (drawRadius * 0.7);
+      const labelY = centerY + Math.sin(midAngle) * (drawRadius * 0.7);
+      
+      const percentage = ((item.value / total) * 100).toFixed(1);
       this.ctx.fillStyle = '#fff';
       this.ctx.font = 'bold 14px sans-serif';
       this.ctx.textAlign = 'center';
@@ -380,6 +413,28 @@ class ChartComponent {
       this.ctx.fillStyle = isHovered ? this.lightenColor(colors[index % colors.length], 30) : colors[index % colors.length];
       this.ctx.fill();
 
+      
+      startAngle = endAngle;
+    });
+    
+    this.drawPieLegend(data);
+    this.drawTitle('User Gender Distribution');
+  }
+
+  drawPieLegend(data) {
+    const legendX = this.width - this.padding.right;
+    const legendY = this.padding.top + 20;
+    const itemHeight = 30;
+    
+    data.forEach((item, index) => {
+      const y = legendY + index * itemHeight;
+      const isHovered = this.hoveredIndex === index;
+      
+      this.ctx.beginPath();
+      this.ctx.roundRect(legendX - 20, y - 8, 16, 16, 4);
+      this.ctx.fillStyle = isHovered ? this.lightenColor(item.color, 30) : item.color;
+      this.ctx.fill();
+      
       this.ctx.fillStyle = isHovered ? '#1890ff' : '#333333';
       this.ctx.font = '14px sans-serif';
       this.ctx.textAlign = 'left';
@@ -696,5 +751,11 @@ class ChartComponent {
       ],
       total: 100
     };
+  getGenderData() {
+    return [
+      { name: 'Male', value: 65, color: '#1890ff' },
+      { name: 'Female', value: 30, color: '#eb2f96' },
+      { name: 'Unknown', value: 5, color: '#8c8c8c' }
+    ];
   }
 }
