@@ -1,0 +1,405 @@
+/* ── Hidden attribute fix ───────────────────────────────── */
+[hidden] { display: none !important; }
+
+/* ── Admin Shell Layout ─────────────────────────────────── */
+.admin-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Gate Screens (not-logged-in / access-denied) ────────── */
+.admin-gate {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gate-card {
+  text-align: center;
+  padding: 3rem 2.5rem;
+  max-width: 380px;
+  width: 100%;
+}
+
+.gate-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.gate-title {
+  font-family: "Cinzel", serif;
+  font-size: 1.5rem;
+  color: var(--gold);
+  margin: 0 0 0.75rem;
+}
+
+.gate-body {
+  color: var(--text-muted);
+  margin: 0 0 1.75rem;
+  font-size: 1rem;
+}
+
+/* ── Header ──────────────────────────────────────────────── */
+.admin-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 2rem;
+  background: rgba(9, 18, 36, 0.92);
+  border-bottom: 1px solid var(--panel-border);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(8px);
+}
+
+.admin-header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.admin-logo-badge {
+  font-size: 1.6rem;
+  line-height: 1;
+}
+
+.admin-title {
+  font-family: "Cinzel", serif;
+  font-size: 1.25rem;
+  color: var(--gold);
+  margin: 0;
+  line-height: 1.2;
+}
+
+.admin-subtitle {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.admin-header-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.admin-user-chip {
+  background: rgba(114, 187, 255, 0.12);
+  border: 1px solid var(--panel-border);
+  border-radius: 999px;
+  padding: 0.25rem 0.85rem;
+  font-size: 0.85rem;
+  color: var(--text-primary);
+}
+
+.admin-nav-link {
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: color 0.2s;
+}
+
+.admin-nav-link:hover {
+  color: var(--gold);
+}
+
+/* ── Tabs ────────────────────────────────────────────────── */
+.admin-tabs {
+  display: flex;
+  gap: 0;
+  padding: 0 2rem;
+  background: rgba(9, 18, 36, 0.7);
+  border-bottom: 1px solid var(--panel-border);
+}
+
+.admin-tab {
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--text-muted);
+  font-family: "Rajdhani", sans-serif;
+  font-size: 0.95rem;
+  font-weight: 500;
+  padding: 0.75rem 1.25rem;
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.admin-tab:hover {
+  color: var(--text-primary);
+}
+
+.admin-tab.active {
+  color: var(--gold);
+  border-bottom-color: var(--gold);
+}
+
+/* ── Content Area ────────────────────────────────────────── */
+.admin-content {
+  padding: 1.75rem 2rem;
+  flex: 1;
+}
+
+/* ── Stat Grid ───────────────────────────────────────────── */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.75rem;
+}
+
+.stat-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1.25rem 1rem;
+  text-align: center;
+  gap: 0.4rem;
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.stat-value {
+  font-family: "Cinzel", serif;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1;
+}
+
+.stat-value.green { color: var(--green); }
+.stat-value.gold  { color: var(--gold); }
+.stat-value.red   { color: var(--red); }
+
+/* ── Row Layout ──────────────────────────────────────────── */
+.admin-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+}
+
+@media (max-width: 768px) {
+  .admin-row { grid-template-columns: 1fr; }
+}
+
+.admin-mini-panel {
+  padding: 1.25rem 1.5rem;
+}
+
+.admin-panel-title {
+  font-family: "Cinzel", serif;
+  font-size: 0.9rem;
+  color: var(--gold);
+  margin: 0 0 1rem;
+  letter-spacing: 0.04em;
+}
+
+/* ── Bar Chart ───────────────────────────────────────────── */
+.bar-chart {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.bar-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.85rem;
+}
+
+.bar-label {
+  width: 110px;
+  flex-shrink: 0;
+  color: var(--text-muted);
+  text-align: right;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bar-track {
+  flex: 1;
+  height: 10px;
+  background: rgba(255, 255, 255, 0.07);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--gold), #ffaa33);
+  transition: width 0.5s ease;
+}
+
+.bar-fill.easy   { background: linear-gradient(90deg, var(--easy), #3de8b0); }
+.bar-fill.medium { background: linear-gradient(90deg, var(--medium), #e8a83d); }
+.bar-fill.hard   { background: linear-gradient(90deg, var(--hard), #e83d3d); }
+
+.bar-count {
+  width: 36px;
+  flex-shrink: 0;
+  color: var(--text-primary);
+  font-weight: 600;
+  text-align: right;
+}
+
+/* ── Users Table ─────────────────────────────────────────── */
+.admin-table-panel {
+  padding: 1.25rem 1.5rem;
+}
+
+.admin-table-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.admin-search {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--panel-border);
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-family: "Rajdhani", sans-serif;
+  font-size: 0.9rem;
+  padding: 0.4rem 0.85rem;
+  outline: none;
+  transition: border-color 0.2s;
+  width: 220px;
+}
+
+.admin-search:focus {
+  border-color: rgba(114, 187, 255, 0.55);
+}
+
+.admin-table-wrap {
+  overflow-x: auto;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+
+.admin-table th {
+  text-align: left;
+  padding: 0.5rem 0.75rem;
+  color: var(--text-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  border-bottom: 1px solid var(--panel-border);
+  white-space: nowrap;
+}
+
+.admin-table td {
+  padding: 0.6rem 0.75rem;
+  border-bottom: 1px solid rgba(114, 187, 255, 0.07);
+  color: var(--text-primary);
+  vertical-align: middle;
+}
+
+.admin-table tbody tr:hover td {
+  background: rgba(114, 187, 255, 0.04);
+}
+
+.admin-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.badge-admin {
+  background: rgba(247, 207, 109, 0.15);
+  border: 1px solid rgba(247, 207, 109, 0.4);
+  color: var(--gold);
+  border-radius: 4px;
+  padding: 0.15rem 0.5rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.toggle-admin-btn {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--panel-border);
+  border-radius: 5px;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-family: "Rajdhani", sans-serif;
+  font-size: 0.78rem;
+  padding: 0.25rem 0.6rem;
+  transition: background 0.2s, color 0.2s;
+}
+
+.toggle-admin-btn:hover {
+  background: rgba(247, 207, 109, 0.12);
+  color: var(--gold);
+  border-color: rgba(247, 207, 109, 0.35);
+}
+
+.toggle-admin-btn.is-self {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+/* ── Charts Tab ──────────────────────────────────────────── */
+.admin-chart-panel {
+  padding: 1.25rem 1.5rem;
+}
+
+.line-chart-wrap {
+  position: relative;
+  height: 220px;
+}
+
+.line-chart-wrap canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* ── panel base (reuse from style.css if not already global) */
+.panel {
+  background: var(--bg-panel);
+  border: 1px solid var(--panel-border);
+  border-radius: 12px;
+  box-shadow: var(--shadow-heavy);
+}
+
+/* ── action-button (reuse style from main) ───────────────── */
+.action-button {
+  display: inline-block;
+  background: linear-gradient(180deg, var(--button-top), var(--button-bottom));
+  border: none;
+  border-radius: 8px;
+  color: #1a0e00;
+  cursor: pointer;
+  font-family: "Cinzel", serif;
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  padding: 0.65rem 1.5rem;
+  text-decoration: none;
+  transition: filter 0.2s, transform 0.1s;
+}
+
+.action-button:hover {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+}

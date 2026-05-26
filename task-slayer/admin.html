@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Task Slayer — Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Rajdhani:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/admin.css" />
+</head>
+<body>
+
+  <!-- Access Denied Screen -->
+  <div id="access-denied" class="admin-gate" hidden>
+    <div class="gate-card panel">
+      <div class="gate-icon">⛔</div>
+      <h2 class="gate-title">Access Denied</h2>
+      <p class="gate-body">You do not have administrator privileges.</p>
+      <a href="/" class="action-button">Return to Game</a>
+    </div>
+  </div>
+
+  <!-- Not Logged In Screen -->
+  <div id="not-logged-in" class="admin-gate" hidden>
+    <div class="gate-card panel">
+      <div class="gate-icon">🔒</div>
+      <h2 class="gate-title">Authentication Required</h2>
+      <p class="gate-body">Please log in with an admin account to access this panel.</p>
+      <a href="/" class="action-button">Go to Login</a>
+    </div>
+  </div>
+
+  <!-- Admin Panel -->
+  <div id="admin-panel" class="admin-shell" hidden>
+
+    <!-- Header -->
+    <header class="admin-header">
+      <div class="admin-header-left">
+        <span class="admin-logo-badge">⚔</span>
+        <div>
+          <h1 class="admin-title">Task Slayer</h1>
+          <span class="admin-subtitle">Admin Console</span>
+        </div>
+      </div>
+      <div class="admin-header-right">
+        <span class="admin-user-chip" id="admin-user-chip">—</span>
+        <a href="/" class="admin-nav-link">← Back to Game</a>
+      </div>
+    </header>
+
+    <!-- Nav Tabs -->
+    <nav class="admin-tabs">
+      <button class="admin-tab active" data-tab="overview">Overview</button>
+      <button class="admin-tab" data-tab="users">Users</button>
+      <button class="admin-tab" data-tab="charts">Charts</button>
+    </nav>
+
+    <!-- Overview Tab -->
+    <section class="admin-content" id="tab-overview">
+      <div class="stat-grid">
+        <div class="stat-card panel">
+          <span class="stat-label">Total Users</span>
+          <span class="stat-value" id="stat-users">—</span>
+        </div>
+        <div class="stat-card panel">
+          <span class="stat-label">Total Quests</span>
+          <span class="stat-value" id="stat-tasks">—</span>
+        </div>
+        <div class="stat-card panel">
+          <span class="stat-label">Completed</span>
+          <span class="stat-value green" id="stat-completed">—</span>
+        </div>
+        <div class="stat-card panel">
+          <span class="stat-label">Active</span>
+          <span class="stat-value gold" id="stat-active">—</span>
+        </div>
+        <div class="stat-card panel">
+          <span class="stat-label">Progress Updates</span>
+          <span class="stat-value" id="stat-updates">—</span>
+        </div>
+        <div class="stat-card panel">
+          <span class="stat-label">Completion Rate</span>
+          <span class="stat-value green" id="stat-rate">—</span>
+        </div>
+      </div>
+
+      <div class="admin-row">
+        <div class="panel admin-mini-panel">
+          <h3 class="admin-panel-title">Quest Difficulty Split</h3>
+          <div class="bar-chart" id="difficulty-bars"></div>
+        </div>
+        <div class="panel admin-mini-panel">
+          <h3 class="admin-panel-title">Monster Defeats</h3>
+          <div class="bar-chart" id="monster-bars"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Users Tab -->
+    <section class="admin-content" id="tab-users" hidden>
+      <div class="panel admin-table-panel">
+        <div class="admin-table-header">
+          <h3 class="admin-panel-title">All Users</h3>
+          <input class="admin-search" id="user-search" type="text" placeholder="Search username…" />
+        </div>
+        <div class="admin-table-wrap">
+          <table class="admin-table" id="users-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Username</th>
+                <th>Level</th>
+                <th>Quests</th>
+                <th>Completed</th>
+                <th>Streak</th>
+                <th>Best Streak</th>
+                <th>Joined</th>
+                <th>Admin</th>
+              </tr>
+            </thead>
+            <tbody id="users-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Charts Tab -->
+    <section class="admin-content" id="tab-charts" hidden>
+      <div class="admin-row">
+        <div class="panel admin-chart-panel">
+          <h3 class="admin-panel-title">New Registrations (Last 14 Days)</h3>
+          <div class="line-chart-wrap">
+            <canvas id="reg-chart"></canvas>
+          </div>
+        </div>
+        <div class="panel admin-chart-panel">
+          <h3 class="admin-panel-title">Quests Created (Last 14 Days)</h3>
+          <div class="line-chart-wrap">
+            <canvas id="tasks-chart"></canvas>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div><!-- /admin-panel -->
+
+  <script src="js/admin.js"></script>
+</body>
+</html>

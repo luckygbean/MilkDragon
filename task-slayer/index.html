@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Task Slayer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Press+Start+2P&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./css/style.css">
+  <link rel="stylesheet" href="./css/chart.css">
+</head>
+<body>
+  <div class="page-shell">
+    <!-- Top warning banner: visible when not logged in -->
+    <div id="login-warning-banner" class="login-warning-banner">
+      <span class="login-warning-icon">&#9888;</span>
+      <span class="login-warning-text">You must be logged in to use this feature. Please log in to continue.</span>
+    </div>
+
+    <div class="modal-overlay" id="auth-modal" style="z-index: 9999; display: none;">
+      <div class="auth-shell" id="auth-shell">
+        <button class="auth-close" id="auth-modal-close" type="button" aria-label="Close">&times;</button>
+
+        <div class="auth-panel auth-panel-form auth-panel-login">
+          <div class="auth-panel-inner">
+            <p class="auth-kicker">Task Slayer Access</p>
+            <h2 class="modal-title auth-title-static">Enter the Dungeon</h2>
+            <p class="auth-copy">Log in with your current hero account to continue your quest.</p>
+
+            <form id="auth-form" class="quest-form auth-form">
+              <label class="form-field">
+                <span class="field-label">Hero Name <em>*</em></span>
+                <input id="auth-username" type="text" placeholder="Enter your username" required autocomplete="off">
+              </label>
+              <label class="form-field">
+                <span class="field-label">Secret Password <em>*</em></span>
+                <input id="auth-password" type="password" placeholder="Enter your password" required>
+              </label>
+
+              <p id="auth-error-msg" class="auth-error-msg">Error message here</p>
+
+              <div class="form-footer auth-form-footer">
+                <button class="action-button save-quest-btn auth-submit-btn" type="submit" id="auth-submit-btn">Login to Start</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <div class="auth-panel auth-panel-form auth-panel-register" aria-hidden="true">
+          <div class="auth-panel-inner">
+            <p class="auth-kicker">New Adventurer</p>
+            <h2 class="modal-title auth-title-static">Enlist a New Hero</h2>
+            <p class="auth-copy">Register a fresh hero profile and start carving through your task list.</p>
+
+            <form id="auth-register-form" class="quest-form auth-form">
+              <label class="form-field">
+                <span class="field-label">Hero Name <em>*</em></span>
+                <input id="auth-register-username" type="text" placeholder="Choose your username" required autocomplete="off">
+              </label>
+              <label class="form-field">
+                <span class="field-label">Secret Password <em>*</em></span>
+                <input id="auth-register-password" type="password" placeholder="Create your password" required>
+              </label>
+
+              <p id="auth-register-error-msg" class="auth-error-msg">Error message here</p>
+
+              <div class="form-footer auth-form-footer">
+                <button class="action-button save-quest-btn auth-submit-btn" type="submit" id="auth-register-submit-btn">Create Hero</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <div class="auth-overlay-container" aria-hidden="true">
+          <div class="auth-overlay">
+            <div class="auth-overlay-panel auth-overlay-left">
+              <p class="auth-kicker">Welcome Back</p>
+              <h2 class="auth-overlay-title">Already have a hero?</h2>
+              <p class="auth-overlay-copy">Use your existing Login to get back into the dungeon.</p>
+              <button class="action-button cancel-quest-btn auth-toggle-btn" id="tab-login" type="button">Login</button>
+            </div>
+            <div class="auth-overlay-panel auth-overlay-right">
+              <p class="auth-kicker">First Journey</p>
+              <h2 class="auth-overlay-title">Need a new hero?</h2>
+              <p class="auth-overlay-copy">Register once, then keep using the same Login details as your adventure continues.</p>
+              <button class="action-button auth-toggle-btn" id="tab-register" type="button">Register</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <header class="top-bar panel">
+      <div>
+        <p class="eyebrow">Dungeon Task Board</p>
+        <h1>Task Slayer</h1>
+      </div>
+
+      <div class="coins-box">
+        <span class="coins-icon">&#9775;</span>
+        <div>
+          <span class="level-label">Coins</span>
+          <span class="coins-value" id="player-coins">0</span>
+        </div>
+      </div>
+
+      <div class="level-box">
+        <span class="level-label">Player Level</span>
+        <span class="level-value" id="player-level">7</span>
+      </div>
+
+      <div class="xp-wrapper">
+        <div class="xp-copy">
+          <span>XP Progress</span>
+          <span id="xp-text">180 / 300 XP</span>
+        </div>
+        <div class="xp-bar">
+          <div class="xp-fill" id="xp-fill"></div>
+        </div>
+      </div>
+
+      <div class="header-auth" id="header-auth">
+        <span class="header-username" id="header-username"></span>
+        <button class="action-button save-quest-btn" id="login-btn" type="button">Login</button>
+        <button class="action-button cancel-quest-btn" id="logout-btn" type="button" style="display: none;">Logout</button>
+      </div>
+    </header>
+
+    <main class="scene-stack">
+      <section class="scene scene-active" id="info-scene" aria-label="Info scene">
+        <div class="scene-banner panel">
+          <div>
+            <p class="eyebrow">Quest Hall</p>
+            <h2>Preparation Chamber</h2>
+          </div>
+          <div class="scene-banner-actions">
+            <span class="scene-chip">Quest Management</span>
+            <button class="action-button tutorial-btn" id="tutorial-btn" type="button">How to Play</button>
+            <button class="action-button shop-btn" id="shop-btn" type="button">&#9775; Shop</button>
+            <button class="action-button achievements-btn" id="achievements-btn" type="button">Achievements</button>
+            <button class="action-button chart-btn" id="chart-btn" type="button" style="display: none;">&#128200; Statistics</button>
+          </div>
+        </div>
+
+        <div class="info-overview-grid">
+          <aside class="panel hero-panel compact-panel">
+            <div class="panel-title-row">
+              <h2>Hero</h2>
+              <span class="scene-chip">Idle Loop</span>
+            </div>
+
+            <div class="asset-frame idle-frame compact-portrait" data-asset-key="heroIdle" data-placeholder-label="HERO IDLE" data-fallback-class="hero-idle-art" aria-label="Hero idle render area">
+              <img class="asset-media" alt="Hero idle animation">
+              <div class="asset-placeholder">
+                <span class="asset-label">HERO IDLE</span>
+              </div>
+            </div>
+
+            <div class="stats-list compact-stats">
+              <div class="stat-row">
+                <span>Class</span>
+                <strong>Task Knight</strong>
+              </div>
+              <div class="stat-row">
+                <span>Focus</span>
+                <strong>18</strong>
+              </div>
+              <div class="stat-row">
+                <span>Discipline</span>
+                <strong>24</strong>
+              </div>
+            </div>
+          </aside>
+
+          <section class="panel current-quest-panel">
+            <div class="battle-heading">
+              <div>
+                <p class="eyebrow">Selected Quest</p>
+                <h2 id="task-title">Refactor the Dashboard Header</h2>
+              </div>
+              <span class="difficulty-tag" id="selected-difficulty-tag">Elite Task</span>
+            </div>
+
+            <p class="task-description" id="task-description">
+              Clean up the layout, improve spacing, and make the header responsive for tablet and desktop breakpoints.
+            </p>
+
+            <div class="info-cards">
+              <div class="detail-card deadline-card">
+                <span class="intent-label">Quest Deadline</span>
+                <p id="selected-deadline">March 24, 2026</p>
+              </div>
+              <div class="detail-card">
+                <span class="intent-label">Latest Progress</span>
+                <p id="progress-text">You have mapped the issue and identified the next strike point.</p>
+              </div>
+              <div class="detail-card progress-card wide-card">
+                <div class="progress-card-header">
+                  <span class="intent-label">Quest Completion</span>
+                  <strong id="selected-progress-percent">45%</strong>
+                </div>
+                <div class="quest-progress-bar">
+                  <div class="quest-progress-fill" id="selected-progress-fill"></div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <aside class="panel monster-panel compact-panel">
+            <div class="panel-title-row">
+              <h2>Monster</h2>
+              <span class="scene-chip danger-chip">Idle Loop</span>
+            </div>
+
+            <div class="asset-frame idle-frame compact-portrait" data-asset-key="monsterIdle" data-placeholder-label="MONSTER IDLE" data-fallback-class="monster-idle-art" aria-label="Monster idle render area">
+              <img class="asset-media" alt="Monster idle animation">
+              <div class="asset-placeholder">
+                <span class="asset-label">MONSTER IDLE</span>
+              </div>
+            </div>
+
+            <div class="hp-block compact-hp-block">
+              <div class="hp-copy">
+                <span>Monster HP</span>
+                <span id="hp-text">120 / 120</span>
+              </div>
+              <div class="hp-bar">
+                <div class="hp-fill" id="hp-fill"></div>
+              </div>
+            </div>
+
+            <div class="intent-box">
+              <span class="intent-label">Intent</span>
+              <p id="monster-intent">Preparing a distraction attack.</p>
+            </div>
+          </aside>
+        </div>
+
+        <div class="quest-dashboard-grid">
+          <section class="panel create-quest-panel">
+            <div class="section-head">
+              <div>
+                <p class="eyebrow">Create New Task</p>
+                <h3>Create New Quest</h3>
+              </div>
+              <span class="scene-chip">Required Fields</span>
+            </div>
+
+            <form id="create-task-form" class="quest-form">
+              <label class="form-field">
+                <span class="field-label">Task Name <em>*</em></span>
+                <input id="task-name-input" name="taskName" type="text" placeholder="Enter a quest title" required>
+              </label>
+
+              <label class="form-field">
+                <span class="field-label">Task Description <em>*</em></span>
+                <textarea id="task-description-input" name="taskDescription" rows="3" placeholder="Describe the objective, scope, and expected result." required></textarea>
+              </label>
+
+              <div class="form-row two-column-row">
+                <fieldset class="form-field difficulty-fieldset">
+                  <legend class="field-label">Difficulty <em>*</em></legend>
+                  <div class="difficulty-toggle" id="difficulty-toggle">
+                    <button class="difficulty-option is-active easy-option" type="button" data-difficulty="Easy">Easy</button>
+                    <button class="difficulty-option medium-option" type="button" data-difficulty="Medium">Medium</button>
+                    <button class="difficulty-option hard-option" type="button" data-difficulty="Hard">Hard</button>
+                  </div>
+                  <input id="task-difficulty-input" name="taskDifficulty" type="hidden" value="Easy">
+                </fieldset>
+
+                <label class="form-field deadline-field featured-field">
+                  <span class="field-label">Deadline <em>*</em></span>
+                  <input id="task-deadline-input" name="taskDeadline" type="date" required>
+                  <small class="field-hint">Critical quest timer. Make this count.</small>
+                </label>
+              </div>
+
+              <div class="form-footer">
+                <p class="form-hint">New quests appear in the active list immediately after creation.</p>
+                <button class="action-button create-quest-button" type="submit">Create Quest</button>
+              </div>
+            </form>
+          </section>
+
+          <div class="quest-board-column">
+            <section class="panel active-quests-panel">
+              <div class="section-head">
+                <div>
+                  <p class="eyebrow">Quest Board</p>
+                  <h3>Active Quests</h3>
+                </div>
+                <span class="scene-chip" id="quest-count-chip">3 Active</span>
+              </div>
+
+              <div class="quest-search-wrap">
+                <input class="quest-search-input" id="quest-search-input" type="search" placeholder="Search quests…" autocomplete="off">
+              </div>
+
+              <div class="active-quest-list" id="active-task-list" aria-live="polite"></div>
+            </section>
+
+            <section class="panel completed-quests-panel" id="completed-quests-panel">
+              <div class="section-head completed-section-head">
+                <div>
+                  <p class="eyebrow">Quest Archive</p>
+                  <h3>Completed Quests</h3>
+                </div>
+                <div class="completed-head-actions">
+                  <span class="scene-chip" id="completed-count-chip">0 Cleared</span>
+                  <button class="action-button archive-detail-btn" type="button" id="archive-detail-btn">Details</button>
+                </div>
+              </div>
+              <div class="completed-quest-list" id="completed-task-list"></div>
+            </section>
+          </div>
+
+          <section class="panel quest-detail-panel">
+            <div class="section-head">
+              <div>
+                <p class="eyebrow">Daily Progress Update</p>
+                <h3>Quest Progress Update</h3>
+              </div>
+              <span class="scene-chip" id="selected-task-chip">Selected Quest</span>
+            </div>
+
+            <div class="selected-task-summary" id="selected-task-summary">
+              <div class="summary-header-row">
+                <div>
+                  <span class="intent-label">Active Quest</span>
+                  <h4 id="detail-task-name">Refactor the Dashboard Header</h4>
+                </div>
+                <span class="difficulty-tag detail-difficulty-tag" id="detail-difficulty-tag">Elite Task</span>
+              </div>
+              <p id="detail-task-description">Clean up the layout, improve spacing, and make the header responsive for tablet and desktop breakpoints.</p>
+              <div class="summary-meta-row">
+                <div class="summary-meta-card featured-field small-featured-field">
+                  <span class="intent-label">Deadline</span>
+                  <strong id="detail-deadline">March 24, 2026</strong>
+                </div>
+                <div class="summary-meta-card">
+                  <span class="intent-label">Current Completion</span>
+                  <strong id="detail-current-progress">45%</strong>
+                </div>
+              </div>
+            </div>
+
+            <form id="progress-update-form" class="progress-form">
+              <label class="form-field">
+                <span class="field-label">Today's Completion Percentage</span>
+                <div class="slider-wrap">
+                  <input id="progress-range-input" name="progressPercent" type="range" min="0" max="100" step="5" value="45">
+                  <div class="slider-value-badge" id="progress-range-value">45%</div>
+                </div>
+              </label>
+
+              <label class="form-field">
+                <span class="field-label">Today's Progress Notes</span>
+                <textarea id="progress-note-input" name="progressNote" rows="4" placeholder="Record today's quest progress, blockers, and breakthroughs."></textarea>
+              </label>
+
+              <div class="form-footer progress-footer">
+                <p class="form-hint">Submit one update per day to keep the quest log alive.</p>
+                <button class="action-button" type="submit">Log Daily Progress</button>
+              </div>
+            </form>
+
+            <div class="progress-history-wrap">
+              <div class="section-head compact-head">
+                <h4>Update History</h4>
+                <span class="scene-chip" id="history-count-chip">3 Entries</span>
+              </div>
+              <div class="progress-history-list" id="progress-history-list"></div>
+            </div>
+          </section>
+        </div>
+
+        <section class="panel quest-log-panel">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Quest Chronicle</p>
+              <h3>Preparation Log</h3>
+            </div>
+            <span class="scene-chip">Live Updates</span>
+          </div>
+
+          <div class="combat-log" id="combat-log" aria-live="polite">
+            <p>Quest board synchronized. Select a quest or create a new one to continue.</p>
+          </div>
+        </section>
+      </section>
+
+      <section class="scene" id="battle-scene" aria-label="Battle scene" hidden>
+        <div class="battle-screen">
+          <div class="battle-sky"></div>
+          <div class="fight-overlay" id="fightOverlay" hidden>
+            <button class="fight-pixel-btn" id="fightStartButton" type="button">
+              FIGHT!
+              <span>CLICK TO START</span>
+            </button>
+          </div>
+          <div class="battle-top-nav">
+            <button class="battle-nav-link" id="back-to-info-btn" type="button">&#9666; Back</button>
+          </div>
+
+          <div class="battle-feed panel" id="battle-feed-panel">
+            <p class="eyebrow">Battle Feed</p>
+            <p class="battle-feed-text" id="battle-status-text">Awaiting your command.</p>
+            <div class="mini-log" id="battle-log" aria-live="polite">
+              <p>Weapons ready. The encounter shifts into combat mode.</p>
+            </div>
+          </div>
+
+          <div class="battle-board">
+            <div class="combatant hero-combatant">
+              <div class="combatant-header">
+                <span class="combatant-name">You</span>
+              </div>
+              <div class="battle-health hero-health">
+                <div class="battle-health-fill hero-health-fill" id="hero-static-fill"></div>
+                <span class="battle-health-text" id="hero-hp-text">72 / 72</span>
+              </div>
+              <div class="battle-actor hero-actor asset-frame battle-stage-frame" id="battle-hero-frame" data-asset-key="heroIdle" data-placeholder-label="HERO IDLE" data-fallback-class="hero-battle-art" aria-label="Hero battle render area">
+                <img class="asset-media" id="battle-hero-media" alt="Hero battle animation">
+                <div class="asset-placeholder">
+                  <span class="asset-label">HERO IDLE</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="combatant monster-combatant">
+              <div class="combatant-header monster-header">
+                <span class="combatant-name">Monster 0</span>
+                <span class="combatant-power">10</span>
+              </div>
+              <div class="battle-health monster-health">
+                <div class="battle-health-fill monster-health-fill" id="battle-hp-fill"></div>
+                <span class="battle-health-text" id="battle-hp-text">120 / 120</span>
+              </div>
+              <p class="monster-status-line" id="battle-monster-intent">Vulnerable 1</p>
+              <div class="battle-actor monster-actor asset-frame battle-stage-frame" id="battle-monster-frame" data-asset-key="monsterIdle" data-placeholder-label="SKELETON IDLE" data-fallback-class="monster-battle-art" aria-label="Monster battle render area">
+                <img class="asset-media" id="battle-monster-media" alt="Monster battle animation">
+                <div class="asset-placeholder">
+                  <span class="asset-label">SKELETON IDLE</span>
+                </div>
+              </div>
+              <div class="xp-popup" id="xp-popup">+40 XP</div>
+            </div>
+          </div>
+
+
+          <div class="pile pile-left">&#9656; Progress 0</div>
+          <div class="pile pile-right">&#9656; Cleared 5</div>
+        </div>
+      </section>
+    </main>
+
+    <div class="modal-overlay" id="achievements-modal" hidden>
+      <div class="modal-card achievements-modal-card">
+        <div class="achievements-modal-header">
+          <h2 class="modal-title">Achievements</h2>
+          <button class="action-button cancel-quest-btn" type="button" id="achievements-close-btn">Close</button>
+        </div>
+        <div class="achievements-grid" id="achievements-grid"></div>
+      </div>
+    </div>
+
+    <div class="modal-overlay" id="edit-quest-modal" hidden>
+      <div class="modal-card edit-modal-card">
+        <h2 class="modal-title">Edit Quest</h2>
+        <form id="edit-task-form" class="quest-form edit-quest-form">
+          <input type="hidden" id="edit-task-id">
+          <label class="form-field">
+            <span class="field-label">Task Name <em>*</em></span>
+            <input id="edit-task-name" type="text" placeholder="Enter a quest title" required>
+          </label>
+          <label class="form-field">
+            <span class="field-label">Task Description <em>*</em></span>
+            <textarea id="edit-task-description" rows="4" placeholder="Describe the objective, scope, and expected result." required></textarea>
+          </label>
+          <div class="form-row two-column-row">
+            <fieldset class="form-field difficulty-fieldset">
+              <legend class="field-label">Difficulty <em>*</em></legend>
+              <div class="difficulty-toggle" id="edit-difficulty-toggle">
+                <button class="difficulty-option easy-option" type="button" data-difficulty="Easy">Easy</button>
+                <button class="difficulty-option medium-option" type="button" data-difficulty="Medium">Medium</button>
+                <button class="difficulty-option hard-option" type="button" data-difficulty="Hard">Hard</button>
+              </div>
+              <input id="edit-task-difficulty" type="hidden" value="Easy">
+            </fieldset>
+            <label class="form-field deadline-field featured-field">
+              <span class="field-label">Deadline <em>*</em></span>
+              <input id="edit-task-deadline" type="date" required>
+            </label>
+          </div>
+          <div class="edit-modal-actions">
+            <button class="action-button delete-quest-btn" type="button" id="edit-delete-btn">Delete Quest</button>
+            <div class="edit-modal-right-actions">
+              <button class="action-button cancel-quest-btn" type="button" id="edit-cancel-btn">Cancel</button>
+              <button class="action-button save-quest-btn" type="submit">Save Changes</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="modal-overlay" id="quest-archive-modal" hidden>
+      <div class="modal-card quest-archive-modal-card" role="dialog" aria-labelledby="quest-archive-title" aria-modal="true">
+        <div class="quest-archive-header">
+          <div>
+            <h2 class="modal-title" id="quest-archive-title">Quest Archive</h2>
+            <p class="quest-archive-subtitle">Browse cleared quests: partial search, filters, and sorting.</p>
+          </div>
+          <button class="action-button cancel-quest-btn" type="button" id="quest-archive-close-btn">Close</button>
+        </div>
+
+        <div class="quest-archive-controls">
+          <div class="archive-search-block">
+            <label class="archive-field archive-search-field">
+              <span class="archive-field-label">Search</span>
+              <input type="search" id="archive-search-input" class="archive-input" placeholder="Any word or fragment…" autocomplete="off">
+            </label>
+            <p class="archive-search-hint">Partial match: each word can appear anywhere in the title, description, notes, difficulty, or monster — not an exact full-title match.</p>
+          </div>
+
+          <div class="archive-filters-row" role="group" aria-label="Archive filters">
+            <label class="archive-field">
+              <span class="archive-field-label">Sort by</span>
+              <select id="archive-sort-select" class="archive-select">
+                <optgroup label="When cleared">
+                  <option value="completed-desc">Cleared: newest first</option>
+                  <option value="completed-asc">Cleared: oldest first</option>
+                </optgroup>
+                <optgroup label="When quest was created">
+                  <option value="created-desc">Created: newest first</option>
+                  <option value="created-asc">Created: oldest first</option>
+                </optgroup>
+                <optgroup label="Deadline date">
+                  <option value="deadline-asc">Deadline: soonest first</option>
+                  <option value="deadline-desc">Deadline: latest first</option>
+                </optgroup>
+                <optgroup label="Difficulty">
+                  <option value="difficulty-asc">Difficulty: Easy → Medium → Hard</option>
+                  <option value="difficulty-desc">Difficulty: Hard → Medium → Easy</option>
+                </optgroup>
+                <optgroup label="Alphabet (quest name)">
+                  <option value="name-asc">Name: A to Z</option>
+                  <option value="name-desc">Name: Z to A</option>
+                </optgroup>
+              </select>
+            </label>
+            <label class="archive-field">
+              <span class="archive-field-label">Difficulty</span>
+              <select id="archive-filter-difficulty" class="archive-select">
+                <option value="all">No tier filter (show all)</option>
+                <optgroup label="Quest tier — pick one">
+                  <option value="Easy">Easy — Scout quest</option>
+                  <option value="Medium">Medium — Champion quest</option>
+                  <option value="Hard">Hard — Elite task</option>
+                </optgroup>
+              </select>
+            </label>
+            <label class="archive-field">
+              <span class="archive-field-label">Monster</span>
+              <select id="archive-filter-monster" class="archive-select">
+                <option value="all">No foe filter (show all)</option>
+                <optgroup label="Foe type — pick one">
+                  <option value="skeleton">Skeleton</option>
+                  <option value="flying-eye">Flying Eye</option>
+                  <option value="goblin">Goblin</option>
+                </optgroup>
+              </select>
+            </label>
+          </div>
+          <p class="archive-filter-legend">Available tiers: Easy, Medium, Hard. Available foes: Skeleton, Flying Eye, Goblin. Open each menu to filter by one choice.</p>
+        </div>
+
+        <p class="quest-archive-summary" id="quest-archive-summary" aria-live="polite"></p>
+
+        <div class="quest-archive-list-wrap">
+          <div class="quest-archive-list" id="quest-archive-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-overlay" id="quest-complete-modal" hidden>
+      <div class="modal-card">
+        <div class="modal-icon">&#9876;</div>
+        <h2 class="modal-title">Quest Complete!</h2>
+        <p class="modal-task-name" id="modal-task-name"></p>
+        <div class="modal-rewards">
+          <div class="modal-reward-item">
+            <span class="modal-reward-label">Bonus XP</span>
+            <span class="modal-reward-value" id="modal-bonus-xp">+100</span>
+          </div>
+          <div class="modal-reward-item">
+            <span class="modal-reward-label">Total XP Earned</span>
+            <span class="modal-reward-value" id="modal-total-xp"></span>
+          </div>
+        </div>
+        <div class="modal-achievements" id="modal-achievements" hidden></div>
+        <button class="action-button modal-close-btn" id="modal-close-btn" type="button">Continue</button>
+      </div>
+    </div>
+
+    <!-- ── Chart Modal ── -->
+    <div class="modal-overlay" id="chart-modal" hidden>
+      <div class="modal-card chart-modal-card">
+        <div class="chart-modal-header">
+          <h2 class="modal-title">Statistics</h2>
+          <button class="action-button cancel-quest-btn chart-close-btn" type="button" id="chart-close-btn">Close</button>
+        </div>
+        <div class="chart-modal-content" id="chart-container"></div>
+      </div>
+    </div>
+
+    <!-- ── Tutorial Overlay ── -->
+    <div id="tutorial-overlay" class="tutorial-overlay" hidden>
+      <!-- Dark backdrop with spotlight cutout -->
+      <div class="tutorial-backdrop" id="tutorial-backdrop"></div>
+      <!-- Floating step card -->
+      <div class="tutorial-card" id="tutorial-card">
+        <div class="tutorial-card-header">
+          <span class="tutorial-step-badge" id="tutorial-step-badge">1 / 6</span>
+          <button class="tutorial-skip-btn" id="tutorial-skip-btn" type="button">Skip</button>
+        </div>
+        <h3 class="tutorial-title" id="tutorial-title">Welcome to Task Slayer</h3>
+        <p class="tutorial-body" id="tutorial-body"></p>
+        <div class="tutorial-footer">
+          <button class="tutorial-nav-btn tutorial-prev-btn" id="tutorial-prev-btn" type="button">&#8592; Back</button>
+          <button class="tutorial-nav-btn tutorial-next-btn" id="tutorial-next-btn" type="button">Next &#8594;</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom-right status bar -->
+  <div class="status-bar" id="status-bar">
+    <span class="status-bar-item" id="status-today">
+      <span class="status-dot status-dot-gold"></span>
+      Due today: <strong id="status-today-count">0</strong> quests
+    </span>
+    <span class="status-bar-divider">|</span>
+    <span class="status-bar-item status-bar-item-danger" id="status-overdue">
+      <span class="status-dot status-dot-red"></span>
+      Overdue: <strong id="status-overdue-count">0</strong> quests
+    </span>
+  </div>
+
+  <script src="./js/battle.js"></script>
+  <script src="./js/chart.js"></script>
+</body>
+</html>

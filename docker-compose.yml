@@ -1,0 +1,11 @@
+services:
+  app:
+    build: .
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./data:/app/backend/data
+    environment:
+      - SECRET_KEY=Love_Jsh_1314
+      - DATABASE=/app/backend/data/task_slayer.db
+    restart: unless-stopped
