@@ -34,7 +34,7 @@ async function api(path, options = {}, { silent401 = false } = {}) {
       showLoginRequired();
     }
     const err = await res.json().catch(() => ({ error: "Request failed" }));
-    throw new Error(err.error || `API error: ${res.status}`);
+    throw new Error(err.error || err.message || `API error: ${res.status}`);
   }
   return res.json();
 }
@@ -409,16 +409,20 @@ const battleIntents = [
   "Telegraphing a low-priority feint."
 ];
 
+const SHOP_ASSET_BASE = window.location.protocol === "file:" ? "./images" : "/images";
+
 const SHOP_EQUIPMENT = {
   titles: {
     title_slayer: "The Slayer",
     title_legend: "Legend",
     title_grinder: "The Grinder",
   },
-  effects: {
-    effect_xp_boost: "effect-xp-aura",
-    effect_gold_trail: "effect-gold-trail",
-    effect_fire: "effect-fire",
+  backgrounds: {
+    bg_default: `${SHOP_ASSET_BASE}/Background.jpg`,
+    bg_dragon_corridor: `${SHOP_ASSET_BASE}/dragon_corridor.png`,
+    bg_forest: `${SHOP_ASSET_BASE}/forest.png`,
+    bg_goddess: `${SHOP_ASSET_BASE}/goddess.png`,
+    bg_graveyard: `${SHOP_ASSET_BASE}/graveyard.png`,
   },
 };
 
@@ -812,6 +816,13 @@ function renderEquippedTitle() {
   const titleId = getEquippedByCategory(SHOP_EQUIPMENT.titles);
   const titleText = titleId ? SHOP_EQUIPMENT.titles[titleId] : "";
   document.querySelectorAll(".equipped-title").forEach((node) => node.remove());
+  const titleShowcase = document.getElementById("title-showcase");
+  const titleShowcaseName = document.getElementById("title-showcase-name");
+
+  if (titleShowcase && titleShowcaseName) {
+    titleShowcase.hidden = !titleText;
+    titleShowcaseName.textContent = titleText ? `${titleText}!` : "";
+  }
 
   if (!titleText) {
     return;
@@ -831,25 +842,22 @@ function renderEquippedTitle() {
   }
 }
 
-function renderEffectParticles(frame, effectClass) {
+function renderEffectParticles(frame, effectClass = "effect-default") {
   if (!frame) {
     return;
   }
 
-  frame.querySelectorAll(".hero-effect-ring").forEach((node) => node.remove());
-
-  if (!effectClass) {
-    return;
-  }
+  frame.querySelectorAll(".hero-particles, .hero-effect-ring").forEach((node) => node.remove());
 
   const ring = document.createElement("div");
-  ring.className = `hero-effect-ring ${effectClass}`;
+  ring.className = `hero-particles ${effectClass || "effect-default"}`;
+  ring.setAttribute("aria-hidden", "true");
 
   for (let i = 0; i < 10; i += 1) {
     const particle = document.createElement("span");
-    particle.className = "hero-effect-particle";
+    particle.className = "hero-particle";
     particle.style.setProperty("--particle-angle", `${i * 36}deg`);
-    particle.style.setProperty("--particle-radius", `${42 + (i % 3) * 4}%`);
+    particle.style.setProperty("--particle-radius", `${58 + (i % 3) * 5}%`);
     particle.style.setProperty("--particle-delay", `${i * -0.09}s`);
     ring.appendChild(particle);
   }
@@ -858,17 +866,25 @@ function renderEffectParticles(frame, effectClass) {
 }
 
 function renderEquippedEffect() {
-  const effectId = getEquippedByCategory(SHOP_EQUIPMENT.effects);
-  const effectClass = effectId ? SHOP_EQUIPMENT.effects[effectId] : "";
-
   document.querySelectorAll("[data-asset-key='heroIdle']").forEach((frame) => {
-    renderEffectParticles(frame, effectClass);
+    renderEffectParticles(frame, "effect-default");
   });
+}
+
+function renderEquippedBattleBackground() {
+  if (!battleScreen) {
+    return;
+  }
+
+  const backgroundId = getEquippedByCategory(SHOP_EQUIPMENT.backgrounds) || "bg_default";
+  const backgroundUrl = SHOP_EQUIPMENT.backgrounds[backgroundId] || SHOP_EQUIPMENT.backgrounds.bg_default;
+  battleScreen.style.setProperty("--battle-bg-image", `url("${backgroundUrl}")`);
 }
 
 function applyShopEquipment() {
   renderEquippedTitle();
   renderEquippedEffect();
+  renderEquippedBattleBackground();
 }
 
 function setupAssetFrames() {
@@ -1568,7 +1584,6 @@ async function handleProgressUpdate(event) {
 
     // Set up battle state: show HP before damage, then animate
     const battle = data.battle;
-    Object.assign(task, data.task);
     battleState.monsterMaxHp = battle.monsterMaxHp;
     // Show pre-damage HP during animation
     battleState.monsterHp = battle.monsterHpRemaining + battle.damageDealt;

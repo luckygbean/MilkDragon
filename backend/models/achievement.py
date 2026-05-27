@@ -1,5 +1,17 @@
 from database import get_db
 
+DEFAULT_ACHIEVEMENTS = [
+    ("first_blood", "First Blood", "Complete your first task", "sword"),
+    ("slayer_5", "Task Slayer", "Complete 5 tasks", "skull"),
+    ("slayer_10", "Monster Hunter", "Complete 10 tasks", "crown"),
+    ("streak_3", "On Fire", "Complete tasks 3 days in a row", "flame"),
+    ("streak_7", "Unstoppable", "Complete tasks 7 days in a row", "lightning"),
+    ("level_5", "Apprentice", "Reach level 5", "star"),
+    ("level_10", "Veteran", "Reach level 10", "medal"),
+    ("hard_slayer", "Elite Warrior", "Complete a Hard difficulty task", "shield"),
+    ("all_monsters", "Bestiary Complete", "Defeat all 3 monster types", "book"),
+]
+
 ACHIEVEMENT_CHECKS = {
     "first_blood": lambda stats, db: stats["total_tasks_completed"] >= 1,
     "slayer_5": lambda stats, db: stats["total_tasks_completed"] >= 5,
@@ -19,8 +31,18 @@ ACHIEVEMENT_CHECKS = {
 }
 
 
+def ensure_default_achievements(db=None):
+    db = db or get_db()
+    db.executemany(
+        "INSERT OR IGNORE INTO achievements (id, name, description, icon) VALUES (?, ?, ?, ?)",
+        DEFAULT_ACHIEVEMENTS,
+    )
+    db.commit()
+
+
 def check_and_award_achievements(user_id=1):
     db = get_db()
+    ensure_default_achievements(db)
     stats = dict(
         db.execute("SELECT * FROM player_stats WHERE user_id = ?", (user_id,)).fetchone()
     )
@@ -38,7 +60,7 @@ def check_and_award_achievements(user_id=1):
     for achievement_id, check_fn in ACHIEVEMENT_CHECKS.items():
         if achievement_id not in already_unlocked and check_fn(stats, db):
             db.execute(
-                "INSERT INTO player_achievements (user_id, achievement_id) VALUES (?, ?)",
+                "INSERT OR IGNORE INTO player_achievements (user_id, achievement_id) VALUES (?, ?)",
                 (user_id, achievement_id),
             )
             newly_unlocked.append(achievement_id)

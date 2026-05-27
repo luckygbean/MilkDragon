@@ -148,44 +148,48 @@
       position: relative;
     }
 
-    .shop-preview-effect-ring {
+    .shop-item-icon {
+      position: relative;
+      z-index: 2;
+      line-height: 1;
+    }
+
+    .shop-background-preview {
       position: absolute;
-      inset: 22px 42px;
+      inset: 0;
+      z-index: 1;
+      background-position: center;
+      background-size: cover;
+      background-repeat: no-repeat;
+      opacity: 0.88;
+    }
+
+    .shop-background-preview::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(180deg, rgba(5, 8, 18, 0.06), rgba(5, 8, 18, 0.45)),
+        radial-gradient(circle at 50% 42%, rgba(247, 207, 109, 0.12), transparent 46%);
       pointer-events: none;
-      border-radius: 50%;
-      animation: shopParticleOrbit 3.2s linear infinite;
     }
 
-    .shop-preview-particle {
+    .shop-item-icon.is-background-icon {
       position: absolute;
-      left: 50%;
-      top: 50%;
-      width: 7px;
-      height: 7px;
+      right: 12px;
+      bottom: 10px;
+      z-index: 2;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 34px;
+      height: 34px;
       border-radius: 50%;
-      background: var(--shop-particle-color, var(--gold));
-      box-shadow: 0 0 10px var(--shop-particle-glow, rgba(247, 207, 109, 0.68));
-      transform:
-        rotate(var(--particle-angle))
-        translateX(var(--particle-radius, 48px))
-        rotate(calc(-1 * var(--particle-angle)));
-      animation: shopParticlePulse 1s ease-in-out infinite alternate;
-      animation-delay: var(--particle-delay, 0s);
-    }
-
-    .shop-preview-effect-ring.effect-gold-trail {
-      --shop-particle-color: #f4c76b;
-      --shop-particle-glow: rgba(244, 199, 107, 0.72);
-    }
-
-    .shop-preview-effect-ring.effect-xp-aura {
-      --shop-particle-color: #77a977;
-      --shop-particle-glow: rgba(119, 169, 119, 0.72);
-    }
-
-    .shop-preview-effect-ring.effect-fire {
-      --shop-particle-color: #ff8a4c;
-      --shop-particle-glow: rgba(255, 96, 50, 0.72);
+      border: 1px solid rgba(247, 207, 109, 0.42);
+      background: rgba(5, 8, 18, 0.62);
+      color: var(--gold);
+      font-size: 1rem;
+      box-shadow: 0 8px 18px rgba(0, 0, 0, 0.28);
     }
 
     .shop-item-badge {
@@ -351,7 +355,8 @@
     }
 
     @keyframes shopParticleOrbit {
-      to { transform: rotate(360deg); }
+      from { transform: translate(-50%, -50%) rotate(0deg); }
+      to { transform: translate(-50%, -50%) rotate(360deg); }
     }
 
     @keyframes shopParticlePulse {
@@ -394,7 +399,7 @@
       <button class="shop-tab active" data-category="all">All</button>
       <button class="shop-tab" data-category="skin">Hero Skins</button>
       <button class="shop-tab" data-category="title">Titles</button>
-      <button class="shop-tab" data-category="effect">Effects</button>
+      <button class="shop-tab" data-category="background">Backgrounds</button>
     </div>
 
     <div class="shop-grid" id="shop-grid"></div>
@@ -495,6 +500,54 @@
         desc: "Each attack leaves embers behind. The dungeon floor will never forget.",
         price: 350,
       },
+      // Battle Backgrounds
+      {
+        id: "bg_default",
+        name: "Training Grounds",
+        category: "background",
+        icon: "BG",
+        image: "./images/Background.jpg",
+        desc: "The original arena. Every slayer starts their first hunt here.",
+        price: 0,
+      },
+      {
+        id: "bg_dragon_corridor",
+        name: "Dragon Corridor",
+        category: "background",
+        icon: "BG",
+        image: "./images/dragon_corridor.png",
+        desc: "A torchlit passage for boss fights and dangerous deadlines.",
+        price: 260,
+        badge: "new",
+      },
+      {
+        id: "bg_forest",
+        name: "Moonlit Forest",
+        category: "background",
+        icon: "BG",
+        image: "./images/forest.png",
+        desc: "A quiet woodland battlefield for steady daily progress.",
+        price: 220,
+      },
+      {
+        id: "bg_goddess",
+        name: "Goddess Shrine",
+        category: "background",
+        icon: "BG",
+        image: "./images/goddess.png",
+        desc: "A sacred arena for heroic streaks and clean victories.",
+        price: 320,
+        badge: "new",
+      },
+      {
+        id: "bg_graveyard",
+        name: "Graveyard Watch",
+        category: "background",
+        icon: "BG",
+        image: "./images/graveyard.png",
+        desc: "A haunted field for hunting overdue quests.",
+        price: 280,
+      },
     ];
 
     let coins = 0;
@@ -508,19 +561,27 @@
     const toastEl = document.getElementById("shop-toast");
     let toastTimer = null;
 
-    const EFFECT_CLASSES = {
-      effect_xp_boost: "effect-xp-aura",
-      effect_gold_trail: "effect-gold-trail",
-      effect_fire: "effect-fire",
-    };
+    const DEFAULT_BACKGROUND_ID = "bg_default";
 
-    function renderEffectPreview(item) {
-      if (item.category !== "effect") return "";
-      const effectClass = EFFECT_CLASSES[item.id] || "effect-gold-trail";
-      const particles = Array.from({ length: 10 }, (_, i) => (
-        `<span class="shop-preview-particle" style="--particle-angle:${i * 36}deg;--particle-radius:${44 + (i % 3) * 4}px;--particle-delay:${i * -0.08}s"></span>`
-      )).join("");
-      return `<span class="shop-preview-effect-ring ${effectClass}">${particles}</span>`;
+    function getVisibleShopItems() {
+      return SHOP_ITEMS.filter((item) => item.category !== "effect");
+    }
+
+    function renderBackgroundPreview(item) {
+      if (item.category !== "background" || !item.image) return "";
+      return `<span class="shop-background-preview" style="background-image:url('${item.image}')"></span>`;
+    }
+
+    function ensureDefaultBackground() {
+      const hasEquippedBackground = [...equippedItems].some((id) =>
+        getVisibleShopItems().some((item) => item.id === id && item.category === "background")
+      );
+
+      ownedItems.add(DEFAULT_BACKGROUND_ID);
+      if (!hasEquippedBackground) {
+        equippedItems.add(DEFAULT_BACKGROUND_ID);
+      }
+      saveStorage();
     }
 
     function showToast(msg, isError = false) {
@@ -537,9 +598,10 @@
     }
 
     function renderGrid() {
+      const visibleItems = getVisibleShopItems();
       const filtered = activeCategory === "all"
-        ? SHOP_ITEMS
-        : SHOP_ITEMS.filter((i) => i.category === activeCategory);
+        ? visibleItems
+        : visibleItems.filter((i) => i.category === activeCategory);
 
       gridEl.innerHTML = "";
 
@@ -575,8 +637,8 @@
         card.className = `shop-item${owned ? " owned" : ""}${equipped ? " equipped" : ""}`;
         card.innerHTML = `
           <div class="shop-item-preview">
-            ${renderEffectPreview(item)}
-            ${item.icon}
+            ${renderBackgroundPreview(item)}
+            <span class="shop-item-icon${item.category === "background" ? " is-background-icon" : ""}">${item.icon}</span>
             ${badgeHtml}
           </div>
           <div class="shop-item-body">
@@ -599,7 +661,7 @@
       gridEl.querySelectorAll("[data-action='buy']").forEach((btn) => {
         btn.addEventListener("click", () => {
           const id = btn.dataset.id;
-          const item = SHOP_ITEMS.find((i) => i.id === id);
+          const item = getVisibleShopItems().find((i) => i.id === id);
           if (!item) return;
           if (!coinsInfinite && coins < item.price) {
             showToast("Not enough coins.", true);
@@ -622,10 +684,10 @@
       gridEl.querySelectorAll("[data-action='equip']").forEach((btn) => {
         btn.addEventListener("click", () => {
           const id = btn.dataset.id;
-          const item = SHOP_ITEMS.find((i) => i.id === id);
+          const item = getVisibleShopItems().find((i) => i.id === id);
           if (!item) return;
           // Unequip any other item in the same category
-          SHOP_ITEMS.forEach((i) => {
+          getVisibleShopItems().forEach((i) => {
             if (i.category === item.category) equippedItems.delete(i.id);
           });
           equippedItems.add(id);
@@ -682,7 +744,10 @@
     });
 
     // Init
-    loadCoins().then(() => renderGrid());
+    loadCoins().then(() => {
+      ensureDefaultBackground();
+      renderGrid();
+    });
   </script>
 </body>
 </html>

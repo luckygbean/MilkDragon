@@ -112,7 +112,7 @@ def update_progress_route(task_id):
         return jsonify({"error": "Request body is required"}), 400
 
     percent = data.get("percent")
-    note = data.get("note", "Daily progress update submitted.").strip()
+    note = (data.get("note") or "Daily progress update submitted.").strip()
 
     if percent is None or not isinstance(percent, (int, float)):
         return jsonify({"error": "percent is required and must be a number"}), 400

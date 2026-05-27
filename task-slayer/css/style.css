@@ -417,24 +417,30 @@ body.battle-mode .scene-stack {
   background: linear-gradient(180deg, rgba(18, 28, 53, 0.92), rgba(10, 15, 28, 0.96));
 }
 
+.hero-particles,
 .hero-effect-ring {
   position: absolute;
-  inset: 11%;
+  inset: -10%;
   z-index: 3;
   pointer-events: none;
   border-radius: 50%;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  overflow: visible;
   animation: heroParticleOrbit 3.4s linear infinite;
 }
 
+.hero-particle,
 .hero-effect-particle {
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 8px;
-  height: 8px;
+  width: 4px;
+  height: 4px;
   border-radius: 50%;
   background: var(--particle-color, var(--gold));
-  box-shadow: 0 0 10px var(--particle-glow, rgba(244, 199, 107, 0.65));
+  box-shadow: 0 0 7px var(--particle-glow, rgba(244, 199, 107, 0.65));
   transform:
     rotate(var(--particle-angle))
     translateX(var(--particle-radius, 46%))
@@ -444,19 +450,27 @@ body.battle-mode .scene-stack {
   animation-delay: var(--particle-delay, 0s);
 }
 
+.hero-particles.effect-default,
 .hero-effect-ring.effect-gold-trail {
   --particle-color: #f4c76b;
   --particle-glow: rgba(244, 199, 107, 0.72);
 }
 
+.hero-particles.effect-xp-aura,
 .hero-effect-ring.effect-xp-aura {
   --particle-color: #77a977;
   --particle-glow: rgba(119, 169, 119, 0.7);
 }
 
+.hero-particles.effect-fire,
 .hero-effect-ring.effect-fire {
   --particle-color: #ff8a4c;
   --particle-glow: rgba(255, 96, 50, 0.72);
+}
+
+.hero-particles.effect-gold-trail {
+  --particle-color: #f4c76b;
+  --particle-glow: rgba(244, 199, 107, 0.72);
 }
 
 .asset-media,
@@ -946,6 +960,32 @@ input[type="range"] {
   margin-top: 20px;
 }
 
+.progress-history-list {
+  display: grid;
+  gap: 12px;
+  max-height: clamp(260px, 32vh, 360px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 4px 6px 4px 0;
+  scrollbar-color: rgba(244, 199, 107, 0.48) rgba(5, 9, 18, 0.42);
+  scrollbar-width: thin;
+}
+
+.progress-history-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.progress-history-list::-webkit-scrollbar-track {
+  background: rgba(5, 9, 18, 0.42);
+  border-radius: 999px;
+}
+
+.progress-history-list::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(244, 199, 107, 0.72), rgba(200, 139, 45, 0.72));
+  border-radius: 999px;
+  border: 2px solid rgba(5, 9, 18, 0.42);
+}
+
 .compact-head {
   margin-bottom: 8px;
 }
@@ -978,7 +1018,13 @@ input[type="range"] {
   position: relative;
   min-height: 100vh;
   overflow: hidden;
-  background: linear-gradient(rgba(10, 16, 34, 0.16), rgba(10, 16, 34, 0.16)), url("../images/Background.jpg") center center / contain no-repeat, #121831;
+  background-color: #121831;
+  background-image:
+    linear-gradient(rgba(10, 16, 34, 0.16), rgba(10, 16, 34, 0.16)),
+    var(--battle-bg-image, url("../images/Background.jpg"));
+  background-position: center center, center center;
+  background-size: auto, contain;
+  background-repeat: repeat, no-repeat;
 }
 
 .battle-screen::before {
@@ -3116,6 +3162,58 @@ h4 {
   gap: 16px;
 }
 
+.title-showcase {
+  min-height: 240px;
+
+  display: flex;
+  flex-direction: column;
+
+  justify-content: flex-start;
+  align-items: flex-start;
+
+  gap: 30px;
+
+  padding: 90px 20px 46px 0;
+
+  text-align: left;
+
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+
+  justify-self: start;
+  align-self: start;
+  width: auto;
+  margin-left: 0;
+}
+
+.title-showcase[hidden] {
+  display: none;
+}
+
+.title-showcase-kicker {
+  color: rgba(232, 221, 200, 0.68);
+  font: 800 clamp(1.2rem, 1.7vw, 2rem) "Inter", sans-serif;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+}
+
+.title-showcase-name {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+
+  color: var(--gold);
+  font-family: "Press Start 2P", cursive;
+  font-size: clamp(2.4rem, 4.4vw, 5rem);
+  line-height: 1.05;
+  letter-spacing: 0;
+  text-transform: uppercase;
+  text-shadow:
+    0 5px 0 #5a3b12,
+    0 14px 24px rgba(0, 0, 0, 0.4),
+    0 0 18px rgba(244, 199, 107, 0.18);
+}
+
 .active-quest-list {
   max-height: 520px;
 }
@@ -3294,6 +3392,85 @@ h4 {
   background: #101724;
 }
 
+.top-bar,
+.scene-banner,
+.compact-panel,
+.current-quest-panel,
+.create-quest-panel,
+.active-quests-panel,
+.completed-quests-panel,
+.quest-detail-panel,
+.quest-log-panel,
+.level-box,
+.coins-box,
+.xp-wrapper,
+.detail-card,
+.summary-meta-card,
+.selected-task-summary,
+.quest-list-item,
+.progress-entry,
+.completed-quest-item,
+.quest-archive-row,
+.achievement-card,
+.chart-modal-card,
+.auth-shell {
+  transform-origin: center;
+  transition:
+    transform 0.22s ease,
+    box-shadow 0.22s ease,
+    border-color 0.22s ease,
+    filter 0.22s ease;
+  will-change: transform;
+}
+
+body:not(.battle-mode) .top-bar:hover,
+body:not(.battle-mode) .scene-banner:hover,
+body:not(.battle-mode) .compact-panel:hover,
+body:not(.battle-mode) .current-quest-panel:hover,
+body:not(.battle-mode) .create-quest-panel:hover,
+body:not(.battle-mode) .active-quests-panel:hover,
+body:not(.battle-mode) .completed-quests-panel:hover,
+body:not(.battle-mode) .quest-detail-panel:hover,
+body:not(.battle-mode) .quest-log-panel:hover,
+body:not(.battle-mode) .level-box:hover,
+body:not(.battle-mode) .coins-box:hover,
+body:not(.battle-mode) .xp-wrapper:hover,
+body:not(.battle-mode) .detail-card:hover,
+body:not(.battle-mode) .summary-meta-card:hover,
+body:not(.battle-mode) .selected-task-summary:hover,
+body:not(.battle-mode) .quest-list-item:hover,
+body:not(.battle-mode) .progress-entry:hover,
+body:not(.battle-mode) .completed-quest-item:hover,
+body:not(.battle-mode) .quest-archive-row:hover,
+body:not(.battle-mode) .achievement-card:hover,
+body:not(.battle-mode) .chart-modal-card:hover,
+body:not(.battle-mode) .auth-shell:hover {
+  position: relative;
+  z-index: 5;
+  transform: translateY(-2px) scale(1.018);
+  border-color: rgba(244, 199, 107, 0.45);
+  box-shadow:
+    inset 0 0 0 1px rgba(244, 199, 107, 0.18),
+    inset 0 3px 0 rgba(255, 230, 168, 0.09),
+    0 5px 0 #2d1c08,
+    0 14px 30px rgba(0, 0, 0, 0.38);
+}
+
+#battle-scene,
+#battle-scene *,
+.battle-screen,
+.battle-board,
+.battle-feed,
+.combatant,
+.battle-actor,
+.battle-stage-frame,
+.hero-actor,
+.monster-actor,
+.asset-frame.battle-stage-frame,
+.xp-popup {
+  will-change: auto;
+}
+
 @media (max-width: 1240px) {
   .info-overview-grid {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
@@ -3358,6 +3535,19 @@ h4 {
   .current-quest-panel,
   .quest-detail-panel {
     grid-column: auto;
+  }
+
+  .title-showcase {
+    min-height: 260px;
+    padding-left: 12px;
+  }
+
+  .title-showcase-name {
+    font-size: clamp(2.2rem, 12vw, 4rem);
+  }
+
+  .progress-history-list {
+    max-height: 280px;
   }
 
   .top-bar {
