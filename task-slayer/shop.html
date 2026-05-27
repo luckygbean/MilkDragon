@@ -192,6 +192,23 @@
       box-shadow: 0 8px 18px rgba(0, 0, 0, 0.28);
     }
 
+    .shop-skin-preview {
+      position: absolute;
+      inset: 10px 0 8px;
+      z-index: 1;
+      width: 100%;
+      height: calc(100% - 18px);
+      object-fit: contain;
+      transform: scale(0.9);
+      image-rendering: pixelated;
+      filter: drop-shadow(0 12px 12px rgba(0, 0, 0, 0.38));
+      pointer-events: none;
+    }
+
+    .shop-item-icon.is-preview-icon {
+      display: none;
+    }
+
     .shop-item-badge {
       position: absolute;
       top: 10px;
@@ -416,6 +433,16 @@
     const SHOP_ITEMS = [
       // Hero Skins
       {
+        id: "skin_archer",
+        name: "Archer",
+        category: "skin",
+        icon: "AR",
+        image: "./assets/archer/idle.gif",
+        desc: "A ranged hero who attacks from position with precise bow shots.",
+        price: 220,
+        badge: "new",
+      },
+      {
         id: "skin_shadow",
         name: "Shadow Knight",
         category: "skin",
@@ -445,6 +472,7 @@
         name: "Crimson Berserker",
         category: "skin",
         icon: "🔴",
+        image: "./assets/crimison_knight/idle.gif",
         desc: "The more tasks pile up, the stronger this hero becomes.",
         price: 400,
         badge: "new",
@@ -562,9 +590,18 @@
     let toastTimer = null;
 
     const DEFAULT_BACKGROUND_ID = "bg_default";
+    const ENABLED_SHOP_SKIN_IDS = new Set(["skin_archer", "skin_crimson"]);
 
     function getVisibleShopItems() {
-      return SHOP_ITEMS.filter((item) => item.category !== "effect");
+      return SHOP_ITEMS.filter((item) =>
+        item.category !== "effect" &&
+        (item.category !== "skin" || ENABLED_SHOP_SKIN_IDS.has(item.id))
+      );
+    }
+
+    function renderSkinPreview(item) {
+      if (item.category !== "skin" || !item.image) return "";
+      return `<img class="shop-skin-preview" src="${item.image}" alt="" aria-hidden="true">`;
     }
 
     function renderBackgroundPreview(item) {
@@ -637,8 +674,9 @@
         card.className = `shop-item${owned ? " owned" : ""}${equipped ? " equipped" : ""}`;
         card.innerHTML = `
           <div class="shop-item-preview">
+            ${renderSkinPreview(item)}
             ${renderBackgroundPreview(item)}
-            <span class="shop-item-icon${item.category === "background" ? " is-background-icon" : ""}">${item.icon}</span>
+            <span class="shop-item-icon${item.category === "background" ? " is-background-icon" : ""}${item.image && item.category === "skin" ? " is-preview-icon" : ""}">${item.icon}</span>
             ${badgeHtml}
           </div>
           <div class="shop-item-body">

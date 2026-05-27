@@ -1282,6 +1282,12 @@ input[type="range"] {
   object-position: center top;
 }
 
+.battle-stage-frame.hero-skin-archer .asset-media,
+.battle-stage-frame.hero-skin-crimison .asset-media {
+  transform: scale(0.88);
+  transform-origin: center top;
+}
+
 .battle-stage-frame .asset-placeholder {
   background: transparent;
 }
@@ -1318,23 +1324,6 @@ input[type="range"] {
 .monster-actor.faded-out {
   opacity: 0;
   visibility: hidden;
-}
-
-.hero-actor.is-hit::after,
-.monster-actor.is-hit::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 3;
-  pointer-events: none;
-  background: rgba(255, 255, 255, 0.92);
-  mix-blend-mode: screen;
-  animation: hitFlash 420ms steps(5, end) both;
-}
-
-.hero-actor.is-hit .asset-media,
-.monster-actor.is-hit .asset-media {
-  animation: hitSpriteFlash 420ms steps(5, end) both;
 }
 
 .monster-actor {
@@ -1434,34 +1423,6 @@ input[type="range"] {
   100% {
     opacity: 0;
     transform: translate(-50%, -48px) scale(1.05);
-  }
-}
-
-@keyframes hitFlash {
-  0%,
-  18%,
-  42% {
-    opacity: 0.95;
-  }
-  10%,
-  30%,
-  55%,
-  100% {
-    opacity: 0;
-  }
-}
-
-@keyframes hitSpriteFlash {
-  0%,
-  18%,
-  42% {
-    filter: brightness(3.2) saturate(0.2);
-  }
-  10%,
-  30%,
-  55%,
-  100% {
-    filter: none;
   }
 }
 

@@ -56,12 +56,16 @@ const battleState = {
   coinsInfinite: false,
 };
 
-const assetConfig = {
+const DEFAULT_HERO_ASSETS = {
   heroIdle: "./assets/hero/__Idle.gif",
   heroRun: "./assets/hero/__Run.gif",
   heroAttack: "./assets/hero/__AttackCombo2hit.gif",
-  heroDeath: "./assets/hero/__Death.gif"
+  heroDeath: "./assets/hero/__Death.gif",
+  combatStyle: "melee",
+  skinClass: ""
 };
+
+let assetConfig = { ...DEFAULT_HERO_ASSETS };
 
 const monsterCatalog = [
   {
@@ -412,6 +416,10 @@ const battleIntents = [
 const SHOP_ASSET_BASE = window.location.protocol === "file:" ? "./images" : "/images";
 
 const SHOP_EQUIPMENT = {
+  skins: {
+    skin_archer: "archer",
+    skin_crimson: "crimisonKnight",
+  },
   titles: {
     title_slayer: "The Slayer",
     title_legend: "Legend",
@@ -423,6 +431,25 @@ const SHOP_EQUIPMENT = {
     bg_forest: `${SHOP_ASSET_BASE}/forest.png`,
     bg_goddess: `${SHOP_ASSET_BASE}/goddess.png`,
     bg_graveyard: `${SHOP_ASSET_BASE}/graveyard.png`,
+  },
+};
+
+const HERO_SKINS = {
+  archer: {
+    heroIdle: "./assets/archer/idle.gif",
+    heroRun: "./assets/archer/idle.gif",
+    heroAttack: "./assets/archer/Attack.gif",
+    heroDeath: "./assets/archer/death.gif",
+    combatStyle: "ranged",
+    skinClass: "hero-skin-archer",
+  },
+  crimisonKnight: {
+    heroIdle: "./assets/crimison_knight/idle.gif",
+    heroRun: "./assets/crimison_knight/run.gif",
+    heroAttack: "./assets/crimison_knight/attack1.gif",
+    heroDeath: "./assets/crimison_knight/death.gif",
+    combatStyle: "melee",
+    skinClass: "hero-skin-crimison",
   },
 };
 
@@ -881,7 +908,27 @@ function renderEquippedBattleBackground() {
   battleScreen.style.setProperty("--battle-bg-image", `url("${backgroundUrl}")`);
 }
 
+function applyEquippedHeroSkin() {
+  const skinId = getEquippedByCategory(SHOP_EQUIPMENT.skins);
+  const skinKey = skinId ? SHOP_EQUIPMENT.skins[skinId] : null;
+  const skinAssets = skinKey ? HERO_SKINS[skinKey] : null;
+  assetConfig = { ...DEFAULT_HERO_ASSETS, ...(skinAssets || {}) };
+
+  document.querySelectorAll("[data-asset-key^='hero']").forEach((frame) => {
+    const media = frame.querySelector(".asset-media");
+    const src = assetConfig[frame.dataset.assetKey];
+    frame.classList.remove("hero-skin-archer", "hero-skin-crimison");
+    if (assetConfig.skinClass) {
+      frame.classList.add(assetConfig.skinClass);
+    }
+    if (media && src) {
+      restartGif(media, src);
+    }
+  });
+}
+
 function applyShopEquipment() {
+  applyEquippedHeroSkin();
   renderEquippedTitle();
   renderEquippedEffect();
   renderEquippedBattleBackground();
@@ -983,7 +1030,7 @@ function setBattleHeroState(state) {
   }
 
   if (state === "attack") {
-    battleHeroFrame.classList.add("is-attacking");
+    battleHeroFrame.classList.add(assetConfig.combatStyle === "ranged" ? "is-returned" : "is-attacking");
     restartGif(battleHeroMedia, assetConfig.heroAttack);
     return;
   }
@@ -1338,6 +1385,21 @@ function showFightOverlay() {
 }
 
 async function playHeroAttackSequence() {
+  if (assetConfig.combatStyle === "ranged") {
+    const monsterReaction = randomItem(currentMonster.reactions);
+    setBattleHeroState("attack");
+    setBattleMonsterState(monsterReaction);
+    battleStatusText.textContent = currentMonster.reactionCopy[monsterReaction] ?? "Arrow strike lands.";
+    await wait(animationTiming.attackMs);
+
+    if (battleState.monsterHp > 0) {
+      setBattleMonsterState("idle");
+    }
+
+    setBattleHeroState("idle");
+    return;
+  }
+
   setBattleHeroState("runForward");
   battleStatusText.textContent = "Hero sprints toward the target.";
   await wait(animationTiming.runForwardMs);
