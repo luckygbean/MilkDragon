@@ -417,6 +417,7 @@ const SHOP_ASSET_BASE = window.location.protocol === "file:" ? "./images" : "/im
 
 const SHOP_EQUIPMENT = {
   skins: {
+    skin_knight: "knight",
     skin_archer: "archer",
     skin_crimson: "crimisonKnight",
   },
@@ -435,6 +436,7 @@ const SHOP_EQUIPMENT = {
 };
 
 const HERO_SKINS = {
+  knight: DEFAULT_HERO_ASSETS,
   archer: {
     heroIdle: "./assets/archer/idle.gif",
     heroRun: "./assets/archer/idle.gif",

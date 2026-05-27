@@ -433,6 +433,15 @@
     const SHOP_ITEMS = [
       // Hero Skins
       {
+        id: "skin_knight",
+        name: "Knight",
+        category: "skin",
+        icon: "KN",
+        image: "./assets/hero/__Idle.gif",
+        desc: "The classic Task Slayer hero. Reliable, balanced, and ready for any quest.",
+        price: 0,
+      },
+      {
         id: "skin_archer",
         name: "Archer",
         category: "skin",
@@ -590,7 +599,8 @@
     let toastTimer = null;
 
     const DEFAULT_BACKGROUND_ID = "bg_default";
-    const ENABLED_SHOP_SKIN_IDS = new Set(["skin_archer", "skin_crimson"]);
+    const DEFAULT_SKIN_ID = "skin_knight";
+    const ENABLED_SHOP_SKIN_IDS = new Set(["skin_knight", "skin_archer", "skin_crimson"]);
 
     function getVisibleShopItems() {
       return SHOP_ITEMS.filter((item) =>
@@ -617,6 +627,18 @@
       ownedItems.add(DEFAULT_BACKGROUND_ID);
       if (!hasEquippedBackground) {
         equippedItems.add(DEFAULT_BACKGROUND_ID);
+      }
+      saveStorage();
+    }
+
+    function ensureDefaultSkin() {
+      const hasEquippedSkin = [...equippedItems].some((id) =>
+        getVisibleShopItems().some((item) => item.id === id && item.category === "skin")
+      );
+
+      ownedItems.add(DEFAULT_SKIN_ID);
+      if (!hasEquippedSkin) {
+        equippedItems.add(DEFAULT_SKIN_ID);
       }
       saveStorage();
     }
@@ -784,6 +806,7 @@
     // Init
     loadCoins().then(() => {
       ensureDefaultBackground();
+      ensureDefaultSkin();
       renderGrid();
     });
   </script>
