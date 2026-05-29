@@ -15,10 +15,6 @@ build/
 *.swp
 *.swo
 
-# OS
-.DS_Store
-Thumbs.db
 
 # Database
-*.db
 /.venv/
