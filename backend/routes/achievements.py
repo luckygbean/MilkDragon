@@ -11,4 +11,4 @@ def list_achievements():
         return jsonify({"error": "请先登录"}), 401
 
     achievements = get_all_achievements(user_id=user_id)
-    return jsonify({"achievements": achievements})
+    return jsonify({"userId": user_id, "achievements": achievements})

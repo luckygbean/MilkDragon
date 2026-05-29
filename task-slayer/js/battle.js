@@ -172,6 +172,7 @@ let completedTasks = [];
 let selectedTaskId = null;
 let currentMonster = monsterCatalog[0];
 let questSearchQuery = "";
+let currentUserId = localStorage.getItem("task_slayer_current_user_id") || null;
 
 const body = document.body;
 const infoScene = document.getElementById("info-scene");
@@ -830,7 +831,9 @@ function setFrameSource(frame, media, src, placeholderText) {
 
 function getEquippedShopIds() {
   try {
-    const parsed = JSON.parse(localStorage.getItem("shop_equipped") || "[]");
+    const userId = currentUserId || localStorage.getItem("task_slayer_current_user_id");
+    const key = userId ? `shop_equipped:user:${userId}` : "shop_equipped:guest";
+    const parsed = JSON.parse(localStorage.getItem(key) || "[]");
     return Array.isArray(parsed) ? parsed : [];
   } catch (_) {
     return [];
@@ -1542,7 +1545,18 @@ async function openAchievementsModal() {
   }
 
   try {
+    achievementsGrid.innerHTML = "";
+    const meData = await api("/auth/me");
+    const activeUserId = meData.id != null ? String(meData.id) : null;
+    if (activeUserId) {
+      currentUserId = activeUserId;
+      localStorage.setItem("task_slayer_current_user_id", activeUserId);
+    }
+
     const data = await api("/achievements");
+    if (activeUserId && data.userId != null && String(data.userId) !== activeUserId) {
+      throw new Error("Achievement data did not match the current user.");
+    }
     const achievements = data.achievements;
 
     achievementsGrid.innerHTML = achievements.map((ach) => {
@@ -1746,6 +1760,10 @@ logoutBtn?.addEventListener("click", async () => {
   } catch (_) {
     // ignore network errors on logout
   }
+  currentUserId = null;
+  localStorage.removeItem("task_slayer_current_user_id");
+  if (achievementsGrid) achievementsGrid.innerHTML = "";
+  if (achievementsModal) achievementsModal.hidden = true;
   window.location.reload();
 });
 
@@ -2022,6 +2040,13 @@ async function initApp() {
       const meData = await api("/auth/me");
       if (headerUsername) headerUsername.textContent = meData.username || "";
       battleState.coinsInfinite = Boolean(meData.is_admin);
+      if (meData.id != null) {
+        currentUserId = String(meData.id);
+        localStorage.setItem("task_slayer_current_user_id", currentUserId);
+      }
+      if (achievementsGrid) achievementsGrid.innerHTML = "";
+      if (achievementsModal) achievementsModal.hidden = true;
+      applyShopEquipment();
 
       // Show/hide Statistics button based on admin status
       const chartBtn = document.getElementById('chart-btn');

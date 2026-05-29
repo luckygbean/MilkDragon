@@ -40,12 +40,13 @@ def ensure_default_achievements(db=None):
     db.commit()
 
 
-def check_and_award_achievements(user_id=1):
+def check_and_award_achievements(user_id):
     db = get_db()
     ensure_default_achievements(db)
-    stats = dict(
-        db.execute("SELECT * FROM player_stats WHERE user_id = ?", (user_id,)).fetchone()
-    )
+    stats_row = db.execute("SELECT * FROM player_stats WHERE user_id = ?", (user_id,)).fetchone()
+    if stats_row is None:
+        return []
+    stats = dict(stats_row)
     stats["user_id"] = user_id
 
     already_unlocked = set(
@@ -84,7 +85,7 @@ def check_and_award_achievements(user_id=1):
     ]
 
 
-def get_all_achievements(user_id=1):
+def get_all_achievements(user_id):
     db = get_db()
     rows = db.execute(
         """SELECT a.id, a.name, a.description, a.icon,

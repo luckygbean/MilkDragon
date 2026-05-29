@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify, session
+from flask import Blueprint, jsonify, request, session
 from models.xp import get_player_stats, format_player_stats
 from database import get_db
 
@@ -19,6 +19,39 @@ def player_stats():
         payload["coins"] = 999999999
         payload["coinsInfinite"] = True
     return jsonify(payload)
+
+
+@player_bp.route("/player/spend-coins", methods=["POST"])
+def spend_coins():
+    user_id = session.get("user_id")
+    if not user_id:
+        return jsonify({"error": "璇峰厛鐧诲綍"}), 401
+
+    data = request.get_json(silent=True) or {}
+    try:
+        amount = int(data.get("amount") or 0)
+    except (TypeError, ValueError):
+        return jsonify({"error": "Invalid coin amount"}), 400
+    if amount < 0:
+        return jsonify({"error": "Invalid coin amount"}), 400
+
+    db = get_db()
+    user = db.execute("SELECT is_admin FROM users WHERE id = ?", (user_id,)).fetchone()
+    if user and user["is_admin"]:
+        return jsonify({"coins": 999999999, "coinsInfinite": True})
+
+    stats = get_player_stats(user_id=user_id)
+    current_coins = stats["coins"] if "coins" in stats.keys() else 0
+    if current_coins < amount:
+        return jsonify({"error": "Not enough coins"}), 400
+
+    next_coins = current_coins - amount
+    db.execute(
+        "UPDATE player_stats SET coins = ? WHERE user_id = ?",
+        (next_coins, user_id),
+    )
+    db.commit()
+    return jsonify({"coins": next_coins, "coinsInfinite": False})
 
 
 @player_bp.route("/player/reset", methods=["POST"])
